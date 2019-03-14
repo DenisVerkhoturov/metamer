@@ -1,0 +1,5 @@
+#Ignor for binary files
+
+*.class
+gradle/wrapper/gradle-wrapper.jar
+
