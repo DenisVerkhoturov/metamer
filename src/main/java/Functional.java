@@ -10,7 +10,7 @@ public class Functional {
         return sum;
     }
 
-    static int max(List<Integer> list)  throws NoSuchElementException {
+    static int max(List<Integer> list)  throws RuntimeException {
         if (list.size() != 0) {
             int max = list.get(0);
             for (int i : list) {

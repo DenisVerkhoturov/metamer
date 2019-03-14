@@ -13,8 +13,8 @@ public class Main {
             list.add(18);
             System.out.println("Sum of list " + Functional.sum(list));
             System.out.println("Max in list " + Functional.max(list));
-        } catch (NoSuchElementException n_s_e) {
-            n_s_e.printStackTrace();
+        } catch (RuntimeException rEx) {
+            rEx.printStackTrace();
             System.out.println("List is empty!");
         }
     }
