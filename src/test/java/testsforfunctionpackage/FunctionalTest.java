@@ -1,12 +1,12 @@
-package TestsForFunctionPackage;
+package testsforfunctionpackage;
 
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static Function.Functional.max;
-import static Function.Functional.sum;
+import static function.Functional.max;
+import static function.Functional.sum;
 
 class FunctionalTest  {
     @Test
