@@ -1,8 +1,10 @@
+package Function;
+
 import java.util.List;
 import java.util.NoSuchElementException;
 
 public class Functional {
-    static int sum(List<Integer> list) {
+    public static int sum(List<Integer> list) {
         int sum = 0;
         for (int i : list) {
             sum += i;
@@ -10,7 +12,7 @@ public class Functional {
         return sum;
     }
 
-    static int max(List<Integer> list)  throws RuntimeException {
+    public static int max(List<Integer> list)  {
         if (list.size() != 0) {
             int max = list.get(0);
             for (int i : list) {
@@ -24,6 +26,3 @@ public class Functional {
         }
     }
 }
-
-
-
