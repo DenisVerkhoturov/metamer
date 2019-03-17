@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static task.Functional.max;
 import static task.Functional.sum;
 
-public class FunctionalTest {
+class FunctionalTest {
     @Test
     void zeroSum() {
         assertEquals(0, sum(Collections.emptyList()));

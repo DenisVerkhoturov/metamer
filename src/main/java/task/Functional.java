@@ -3,8 +3,8 @@ package task;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-class Functional {
-    static int sum(List<Integer> list) {
+public class Functional {
+    public static int sum(List<Integer> list) {
         int sum = 0;
         for (Integer elem : list) {
             sum += elem;
@@ -12,7 +12,7 @@ class Functional {
         return sum;
     }
 
-    static int max(List<Integer> list) throws NoSuchElementException {
+    public static int max(List<Integer> list) throws NoSuchElementException {
         if (list.isEmpty())
             throw new NoSuchElementException("Cannot define max element because the list is empty!");
         int max = list.get(0);
