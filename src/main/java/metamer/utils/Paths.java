@@ -12,4 +12,3 @@ public class Paths {
         return s.substring(index + 1);
     }
 }
-
