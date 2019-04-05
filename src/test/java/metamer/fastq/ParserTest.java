@@ -46,7 +46,7 @@ class ParserTest {
 
         assertThat(ourRecords, contains(
                 new Record("beautifulID", "some description", "ACGTNAA", "!~#2Yu&".getBytes()),
-                new Record("notSoBeautifulID","", "AAACTG", "~0}[j!".getBytes())
+                new Record("notSoBeautifulID", "", "AAACTG", "~0}[j!".getBytes())
         ));
     }
 

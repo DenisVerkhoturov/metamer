@@ -18,7 +18,7 @@ public class Parser {
             }
             sequences.add(builder.toString());
 
-            for (int index = 0; index < record.sequence.length(); index+=LINE_LENGTH) {
+            for (int index = 0; index < record.sequence.length(); index += LINE_LENGTH) {
                 if (record.sequence.length() - index >= LINE_LENGTH) {
                     sequences.add(record.sequence.substring(index, index + LINE_LENGTH));
                 } else {
