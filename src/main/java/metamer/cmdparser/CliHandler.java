@@ -96,7 +96,6 @@ public class CliHandler {
 
     }
 
-
     public static void main(final String... args) {
         try {
             parse(args);
