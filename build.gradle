@@ -1,6 +1,14 @@
+buildscript {
+    configurations.maybeCreate('pitest')
+    dependencies {
+        pitest 'org.pitest:pitest-junit5-plugin:0.8'
+    }
+}
+
 plugins {
     id 'java'
     id 'checkstyle'
+    id 'info.solidsoft.pitest' version '1.4.0'
 }
 
 version '1.0-SNAPSHOT'
@@ -41,4 +49,14 @@ test {
 
 checkstyle {
     toolVersion '7.8.1'
+}
+
+pitest { 
+    testPlugin = 'junit5'
+    targetClasses = ['metamer.*']
+    targetTests = ['metamer.*']
+    outputFormats = ['XML', 'HTML']
+    mutators = ['ALL']
+    timestampedReports = false
+    threads = 4
 }
