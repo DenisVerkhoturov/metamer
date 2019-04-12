@@ -74,7 +74,7 @@ public class Graph {
         return new HashMap<>(this.edges);
     }
 
-    Graph(Stream<String> strStream, int k) {
+    public Graph(Stream<String> strStream, int k) {
 
         this.edges = new HashMap<>();
         this.nodes = new HashMap<>();

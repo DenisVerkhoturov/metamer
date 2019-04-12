@@ -1,5 +1,6 @@
 package metamer.utils;
 
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 public class Paths {
@@ -10,5 +11,13 @@ public class Paths {
             return "";
         }
         return s.substring(index + 1);
+    }
+
+    public static Path resource(final String filename) throws URISyntaxException {
+        return resource(Paths.class, filename);
+    }
+
+    public static Path resource(final Class clazz, final String filename) throws URISyntaxException {
+        return java.nio.file.Paths.get(clazz.getResource(filename).toURI());
     }
 }

@@ -1,5 +1,6 @@
 package metamer.cmdparser;
 
+import metamer.assembler.Assembler;
 import metamer.fastq.FastQ;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
@@ -88,12 +89,23 @@ public class CliHandler {
             } else {
                 setCommand(com);
                 if ("read".equals(command)) {
-                    FastQ fastQFile = new FastQ(filename.toString());
+                    FastQ fastQFile = new FastQ(filename);
                     fastQFile.records();
                 }
             }
         }
 
+        if (!(line.hasOption("c") || line.hasOption("f") || line.hasOption("h"))) {
+            Path inpFilePath = Paths.get(args[0]);
+            Path outFilePath = Paths.get(args[1]);
+            outFilePath.toFile().createNewFile();
+            if (!(inpFilePath.toFile().exists() && inpFilePath.toFile().canRead() &&
+                    outFilePath.toFile().exists() && outFilePath.toFile().canRead())) {
+                throw new IOException();
+            }
+            Assembler assembler = new Assembler(inpFilePath, outFilePath);
+            assembler.assemble();
+        }
     }
 
     public static void main(final String... args) {

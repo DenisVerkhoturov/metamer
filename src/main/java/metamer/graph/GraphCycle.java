@@ -24,7 +24,7 @@ public class GraphCycle {
         }
     }
 
-    GraphCycle(final Graph graph) {
+    public GraphCycle(final Graph graph) {
         this.graph = graph;
 
         colouredNodes = new HashMap<>();
