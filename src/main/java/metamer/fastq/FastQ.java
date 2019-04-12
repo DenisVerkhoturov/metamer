@@ -11,8 +11,8 @@ public class FastQ {
     final Path path;
     final public static String FASTQ_EXTENSION = "fastq";
 
-    public FastQ(String path) {
-        this.path = Paths.get(path);
+    public FastQ(Path path) {
+        this.path = path;
     }
 
     public boolean isFileValid() {
