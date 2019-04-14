@@ -7,7 +7,6 @@ import metamer.graph.GraphCycle;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -34,5 +33,29 @@ public class Assembler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean equals(final Object another) {
+        if (this == another) {
+            return true;
+        }
+        if (another == null || getClass() != another.getClass()) {
+            return false;
+        }
+
+        Assembler assembler = (Assembler) another;
+
+        if (!inputFile.equals(assembler.inputFile)) {
+            return false;
+        }
+        return outputFile.equals(assembler.outputFile);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = inputFile.hashCode();
+        result = 31 * result + outputFile.hashCode();
+        return result;
     }
 }

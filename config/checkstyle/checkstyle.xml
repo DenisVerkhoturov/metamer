@@ -34,6 +34,8 @@
         <property name="message" value='All TODOs should be named.  e.g. "TODO: (ENG-123) - Refactor when v2 is released."' />
     </module>
 
+    <module name="SuppressWarningsFilter" />
+
     <module name="TreeWalker">
 
         <!--  IMPORT CHECKS -->
@@ -175,13 +177,6 @@
             <property name="severity" value="error" />
         </module>
 
+        <module name="SuppressWarningsHolder" />
     </module>
-
-    <module name="SuppressionCommentFilter">
-        <property name="offCommentFormat" value="CHECKSTYLE OFF: (.+)" />
-        <property name="onCommentFormat" value="CHECKSTYLE ON" />
-        <property name="checkFormat" value="Javadoc.*" />
-        <property name="messageFormat" value="$1" />
-    </module>
-
 </module>
