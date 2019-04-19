@@ -4,14 +4,12 @@ import metamer.fasta.Fasta;
 import metamer.fasta.Record;
 import metamer.graph.Graph;
 import metamer.graph.GraphCycle;
+import metamer.io.FileReader;
+import metamer.io.FileWriter;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.List;
 import java.util.stream.Stream;
-
-import static metamer.fasta.Fasta.FASTA_EXTENSION;
 
 public class Assembler {
     private final Path inputFile;
@@ -23,18 +21,19 @@ public class Assembler {
     }
 
     public void assemble() {
-        try {
-            if (metamer.utils.Paths.extension(inputFile).equals(FASTA_EXTENSION)) {
-                final Stream<Record> records = new Fasta(inputFile).records();
-                Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
-                graph.createFromStream(records.map(record -> record.sequence));
-                final GraphCycle graphCycle = new GraphCycle(graph.optimizeGraph());
-                String cycle = graphCycle.findCycle();
 
-                new Fasta(outputFile).write(List.of(new Record("cycle", "from file: " + inputFile, cycle)));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileReader<Record> t = new FileReader<>(inputFile, Fasta.parser());
+        final Stream<Record> records = t.read();
+
+        Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
+        graph.createFromStream(records.map(record -> record.sequence));
+
+        final GraphCycle graphCycle = new GraphCycle(graph.optimizeGraph());
+        String cycle = graphCycle.findCycle();
+
+        final FileWriter<Record> r = new FileWriter<>(outputFile, Fasta.parser());
+        r.write(Stream.of(new Record("cycle", "from file: " + inputFile, cycle)));
+        
     }
 }
+

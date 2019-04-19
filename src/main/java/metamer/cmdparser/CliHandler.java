@@ -1,7 +1,6 @@
 package metamer.cmdparser;
 
 import metamer.assembler.Assembler;
-import metamer.fastq.FastQ;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.CommandLineParser;
@@ -96,10 +95,6 @@ public class CliHandler {
                 System.out.println("Wrong param for command option");
             } else {
                 setCommand(com);
-                if ("read".equals(command)) {
-                    FastQ fastQFile = new FastQ(filename);
-                    fastQFile.records();
-                }
             }
         }
 
@@ -142,8 +137,11 @@ public class CliHandler {
                 return;
             }
 
-            Assembler assembler = new Assembler(inpFilePath, outFilePath);
-            assembler.assemble();
+            String type = "fasta";
+            if (type.equals("fasta")) {
+                Assembler assembler = new Assembler(inpFilePath, outFilePath);
+                assembler.assemble();
+            }
         }
     }
 
