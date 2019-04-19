@@ -1,10 +1,10 @@
 package metamer.fastq;
 
+import metamer.io.FileReader;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
@@ -29,8 +29,9 @@ class FastQTest {
 
     @Test
     void testReadRecordsFromFile() throws URISyntaxException {
-        final FastQ file = new FastQ(resource(this.getClass(), "test.fastq"));
-        final List<Record> records = file.records().collect(toList());
+        FileReader<Record> f = new FileReader<>(resource(this.getClass(), "test.fastq"),
+                FastQ.parser());
+        final List<Record> records = f.read().collect(toList());
 
         assertThat(records, contains(
                 new Record("MyCoolID", "some description", "ACTGGTCA", "!~+9#hkm".getBytes()),

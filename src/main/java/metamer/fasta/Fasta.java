@@ -1,68 +1,82 @@
 package metamer.fasta;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import metamer.utils.Paths;
 
-public class Fasta {
-    private final String SP = System.getProperty("line.separator");
+import metamer.io.Parser;
+
+public class Fasta implements Parser<Record> {
+
     public static final String FASTA_EXTENSION = "fasta";
-    public final Path filePath;
+    private static final String IDENTIFIER_PREFIX = ">";
+    private final int LINE_LENGTH = 80;
 
-    public Fasta(Path filePath) {
-        this.filePath = filePath;
+    private final static Fasta instance = new Fasta();
+
+    private Fasta() {
     }
 
-    public boolean isFileValid() {
-        File file = filePath.toFile();
-        return (file.exists() && file.isFile());
-    }
+    @Override
+    public Stream<String> show(Record record) {
+        List<String> sequences = new ArrayList<>();
 
-    public Stream<Record> records() {
-        try {
-            if (!metamer.utils.Paths.extension(filePath).equals(FASTA_EXTENSION)) {
-                throw new IOException("File is not fastA");
+        StringBuilder builder = new StringBuilder();
+        builder.append(">").append(record.uniqueIdentifier);
+        if (!("".equals(record.additionalInformation))) {
+            builder.append(" ").append(record.additionalInformation);
+        }
+        sequences.add(builder.toString());
+
+        for (int index = 0; index < record.sequence.length(); index += LINE_LENGTH) {
+            if (record.sequence.length() - index >= LINE_LENGTH) {
+                sequences.add(record.sequence.substring(index, index + LINE_LENGTH));
+            } else {
+                sequences.add(record.sequence.substring(index));
             }
-            if (!isFileValid()) {
-                throw new IOException("FastA file is invalid");
-            }
-            return Parser.parseString(Files.lines(filePath));
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return Stream.empty();
+
+        return sequences.stream();
     }
 
-    public void write(Collection<Record> records) throws IOException {
-        if (!Paths.extension(filePath).equals(FASTA_EXTENSION)) {
-            throw new IllegalArgumentException("Not a fasta extension!");
+    @Override
+    public Stream<String> show(final Stream<Record> records) {
+        return records.flatMap(this::show);
+    }
+
+    @Override
+    public Record read(final List<String> lines) {
+        String uniqI = lines.get(0).substring(1, lines.get(0).indexOf(' ') - 1);
+        String addInf = lines.get(0).substring(lines.get(0).indexOf(' ') + 1);
+        StringBuilder seq = new StringBuilder();
+        for (int i = 1; i < lines.size(); i++) {
+            seq.append(lines.get(i));
         }
+        return new Record(uniqI, addInf, seq.toString());
+    }
 
-        try {
-            File file = new File(filePath.toString());
-            file.createNewFile();
-            FileWriter fileWriter = new FileWriter(file, false);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+    @Override
+    public Stream<Record> read(Stream<String> inpStream) {
+        List<List<String>> list = new ArrayList<>();
+        int counter = -1;
 
-            Stream<String> stream = new Parser().parseRecords(records.stream());
-            stream.forEach((str) -> {
-                try {
-                    bufferedWriter.write(str + SP);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            bufferedWriter.close();
-            fileWriter.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (String str : inpStream.collect(Collectors.toList())) {
+            if (str.startsWith(IDENTIFIER_PREFIX)) {
+                list.add(new ArrayList<>());
+                counter++;
+            }
+            list.get(counter).add(str);
         }
+        List<Record> out = new ArrayList<>();
+        for (List<String> strings : list) {
+            out.add(read(strings));
+        }
+        return out.stream();
+
+    }
+
+    public static Fasta parser() {
+        return instance;
     }
 }
