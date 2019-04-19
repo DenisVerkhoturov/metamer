@@ -1,14 +1,14 @@
 package metamer.graph;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class GraphCycle {
     private final Graph graph;
-    private Map<Graph.Node, NodeDescriptor> colouredNodes;
-    private Graph.Node startCycle, endCycle;
+    private Map<Node, NodeDescriptor> colouredNodes;
+    private Node startCycle, endCycle;
 
     enum NodeColor {
         WHITE, GRAY, BLACK
@@ -16,7 +16,7 @@ public class GraphCycle {
 
     class NodeDescriptor {
         private NodeColor color;
-        private Graph.Node previousNode;
+        private Node previousNode;
 
         NodeDescriptor() {
             this.color = NodeColor.WHITE;
@@ -28,19 +28,19 @@ public class GraphCycle {
         this.graph = graph;
 
         colouredNodes = new HashMap<>();
-        for (Map.Entry<String, Graph.Node> entry : graph.getNodes().entrySet()) {
+        for (Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
             colouredNodes.put(entry.getValue(), new NodeDescriptor());
         }
     }
 
-    public Map<Graph.Node, NodeDescriptor> getColouredNodes() {
+    public Map<Node, NodeDescriptor> getColouredNodes() {
         return new HashMap<>(this.colouredNodes);
     }
 
-    private void dfc(final Graph.Node currentNode, final NodeDescriptor currentDescriptor) {
+    private void dfc(final Node currentNode, final NodeDescriptor currentDescriptor) {
         currentDescriptor.color = NodeColor.GRAY;
-        final ArrayList<Graph.Node> relatedNodes = graph.getEdges().get(currentNode);
-        for (Graph.Node relatedNode : relatedNodes) {
+        final List<Node> relatedNodes = graph.getNeighbors().get(currentNode);
+        for (Node relatedNode : relatedNodes) {
             final NodeDescriptor relatedNodeDescriptor = colouredNodes.get(relatedNode);
             if (relatedNodeDescriptor.color.equals(NodeColor.WHITE)) {
                 relatedNodeDescriptor.previousNode = currentNode;
@@ -61,18 +61,22 @@ public class GraphCycle {
             return "";
         }
 
+        if ((Objects.equals(startCycle, endCycle)) &&
+                (startCycle.kmer.charAt(0) == endCycle.kmer.charAt(endCycle.kmer.length() - 1))) {
+            return startCycle.kmer.substring(0, startCycle.kmer.length() - 1);
+        }
         final StringBuilder tmpStr = new StringBuilder();
-        tmpStr.insert(0, startCycle.getKmer().substring(0, 1));
+        tmpStr.insert(0, startCycle.kmer.substring(0, 1));
         while (!Objects.equals(startCycle, endCycle)) {
             startCycle = colouredNodes.get(startCycle).previousNode;
-            tmpStr.insert(0, startCycle.getKmer().substring(0, 1));
+            tmpStr.insert(0, startCycle.kmer.substring(0, startCycle.kmer.length() - 2));
         }
         return tmpStr.toString();
     }
 
     public String findCycle() {
-        for (Map.Entry<String, Graph.Node> entry : graph.getNodes().entrySet()) {
-            final Graph.Node currentNode = entry.getValue();
+        for (Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
+            final Node currentNode = entry.getValue();
             final NodeDescriptor currentDescriptor = colouredNodes.get(currentNode);
             if (currentDescriptor.color.equals(NodeColor.WHITE)) {
                 dfc(currentNode, currentDescriptor);

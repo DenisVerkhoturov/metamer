@@ -3,63 +3,35 @@ package metamer.graph;
 import metamer.utils.GraphUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
+import java.util.List;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class Graph {
 
-    private Map<Node, ArrayList<Node>> edges;
+    private Map<Node, List<Node>> neighbors;
     private Map<String, Node> nodes;
     private int k;
 
-    class Node {
-        private String kmer;
-        private int nin;
-        private int nout;
-
-        Node(String kmer) {
-            this.kmer = kmer;
-            this.nin = 0;
-            this.nout = 0;
-        }
-
-        public String getKmer() {
-            return this.kmer;
-        }
-
-        @Override
-        public String toString() {
-            return " Kmer = " + this.kmer + ", nout = " + this.nout + ", nin = " + this.nin + " ";
-        }
+    public Graph(final Map<Node, List<Node>> neighbors, final Map<String, Node> nodes, int k) {
+        this.neighbors = neighbors;
+        this.nodes = nodes;
+        this.k = k;
     }
 
-    private void createNodesMap(String st) {
-        Node nodeL;
-        Node nodeR;
-        final String km1L = st.substring(0, k - 1);
-        final String km1R = st.substring(1, k);
-
-        if (this.nodes.containsKey(km1L)) {
-            nodeL = this.nodes.get(km1L);
-        } else {
-            this.nodes.put(km1L, new Node(km1L));
-            nodeL = this.nodes.get(km1L);
-        }
-        if (this.nodes.containsKey(km1R)) {
-            nodeR = this.nodes.get(km1R);
-        } else {
-            this.nodes.put(km1R, new Node(km1R));
-            nodeR = this.nodes.get(km1R);
-        }
-        nodeL.nout += 1;
-        nodeL.kmer = km1L;
-        nodeR.nin += 1;
-        nodeR.kmer = km1R;
+    private void createNodesMap(String str) {
+        this.nodes.computeIfAbsent(str.substring(0, k - 1), Node::new);
+        this.nodes.computeIfAbsent(str.substring(1, k), Node::new);
     }
 
-    private void makeNodes(String st) {
-       GraphUtils.slidingWindow(st, k).forEach(this::createNodesMap);
+    public void makeNodes(String str) {
+        GraphUtils.slidingWindow(str, k).forEach(this::createNodesMap);
     }
 
     public Stream<Map.Entry<String, Node>> getNodesAsCollection() {
@@ -70,30 +42,90 @@ public class Graph {
         return new HashMap<>(this.nodes);
     }
 
-    public Map<Node, ArrayList<Node>> getEdges() {
-        return new HashMap<>(this.edges);
+    public Map<Node, List<Node>> getNeighbors() {
+        return new HashMap<>(this.neighbors);
     }
 
-    public Graph(Stream<String> strStream, int k) {
-
-        this.edges = new HashMap<>();
-        this.nodes = new HashMap<>();
-        this.k = k;
-
-        strStream.forEach(this::makeNodes);
+    public Graph optimizeGraph() {
+        Map<String, Node> nodesOptimized = new HashMap<>();
+        Map<Node, List<Node>> neighborsOptimized = neighbors;
+        Set<String> used = new HashSet<>();
 
         for (Map.Entry<String, Node> entry : nodes.entrySet()) {
+            final Node first = entry.getValue();
+            if (used.contains(first.kmer)) {
+                continue;
+            }
+            used.add(first.kmer);
+            String newKmer = first.kmer;
+            Node last = first;
+            while ((last.nout == 1) && (neighborsOptimized.get(last).get(0).nin == 1) &&
+                    (neighborsOptimized.get(last).get(0) != first)) {
+                final Node tmp = last;
+                last = neighborsOptimized.get(last).get(0);
+                neighborsOptimized.remove(tmp);
+                nodesOptimized.remove(tmp.kmer);
+                used.add(last.kmer);
+                newKmer += last.kmer.substring(k - 2);
+            }
+
+            if (newKmer.equals(first.kmer)) {
+                nodesOptimized.put(first.kmer, first);
+                continue;
+            }
+
+            Node node = new Node(newKmer);
+            node.nin = first.nin;
+            node.nout = last.nout;
+            nodesOptimized.put(newKmer, node);
+
+            neighborsOptimized.put(node, neighborsOptimized.get(last));
+            neighborsOptimized.remove(last);
+            nodesOptimized.remove(last.kmer);
+            for (Map.Entry<Node, List<Node>> entry2 : neighborsOptimized.entrySet()) {
+                if (entry2.getValue().contains(first)) {
+                    entry2.getValue().add(node);
+                    entry2.getValue().remove(first);
+                }
+            }
+        }
+        return new Graph(neighborsOptimized, nodesOptimized, k);
+    }
+
+    public void createFromStream(Stream<String> stream) {
+        stream.forEach(this::makeNodes);
+        for (Map.Entry<String, Node> entry : nodes.entrySet()) {
             for (Map.Entry<String, Node> entry2 : nodes.entrySet()) {
-                ArrayList<Node> list = this.edges.getOrDefault(entry.getValue(), new ArrayList<>());
+                List<Node> list = this.neighbors.getOrDefault(entry.getValue(), new ArrayList<>());
 
                 final String firstKey = entry.getKey().substring(1);
                 final String secondKey = entry2.getKey().substring(0, entry2.getKey().length() - 1);
                 if (firstKey.equals(secondKey) && !list.contains(entry2.getValue())) {
                     list.add(entry2.getValue());
+                    entry.getValue().nout++;
+                    entry2.getValue().nin++;
                 }
-                this.edges.put(entry.getValue(), list);
+                this.neighbors.put(entry.getValue(), list);
             }
         }
+    }
+
+    public static Graph of(final int k, final Map.Entry<Node, Node>... edges) {
+        final Map<String, Node> nodes = new HashMap<>();
+        final Map<Node, List<Node>> neighbors = new HashMap<>();
+        for (Map.Entry<Node, Node> edge : edges) {
+            final Node left = edge.getKey();
+            final Node right = edge.getValue();
+            nodes.putIfAbsent(left.kmer, left);
+            nodes.putIfAbsent(right.kmer, right);
+            nodes.get(left.kmer).nout++;
+            nodes.get(right.kmer).nin++;
+            neighbors.merge(nodes.get(left.kmer), new ArrayList<>(Arrays.asList(nodes.get(right.kmer))),
+                    (o, n) -> Stream.concat(o.stream(), n.stream()).collect(toList()));
+            neighbors.merge(nodes.get(right.kmer), new ArrayList<Node>(),
+                    (o, n) -> Stream.concat(o.stream(), n.stream()).collect(toList()));
+        }
+        return new Graph(neighbors, nodes, k);
     }
 }
 
