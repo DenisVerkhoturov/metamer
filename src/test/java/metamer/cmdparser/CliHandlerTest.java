@@ -61,13 +61,4 @@ class CliHandlerTest {
         });
         assertNotNull(thrown.getMessage());
     }
-
-    @Test
-    public void testCorrectAssembly() throws URISyntaxException, IOException {
-        CliHandler.main(resource(this.getClass(), "inp.fasta").toString(),
-                resource(this.getClass(), "out.fasta").toString());
-        assertThat(Files.lines(resource(this.getClass(), "out.fasta")).collect(toList()),
-                contains(">cycle from file: " + resource(this.getClass(), "inp.fasta"), "ABCDE"));
-    }
-
 }
