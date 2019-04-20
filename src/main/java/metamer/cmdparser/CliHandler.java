@@ -21,6 +21,14 @@ public class CliHandler {
     private static Path filename;
     private static String command;
 
+    public class Messages {
+        public static final String PATH_IS_DIRECTORY = " is a directory. Please, enter required file";
+        public static final String FILE_ALREADY_EXIST = " file already exist and cannot be overwritten";
+        public static final String FILE_DOES_NOT_EXIST = " file doesn't exist";
+        public static final String FILE_IS_NOT_READABLE = " file is not permitted to be read";
+        public static final String FILE_IS_NOT_WRITABLE = " file is not permitted to be written";
+    }
+
     public static Path getFilename() {
         return filename;
     }
@@ -96,13 +104,44 @@ public class CliHandler {
         }
 
         if (!(line.hasOption("c") || line.hasOption("f") || line.hasOption("h"))) {
+            if (args.length < 2) {
+                printHelp(options, 80, "Options", "-- HELP --", 3, 5, true, System.out);
+                return;
+            }
+
             Path inpFilePath = Paths.get(args[0]);
             Path outFilePath = Paths.get(args[1]);
-            outFilePath.toFile().createNewFile();
-            if (!(inpFilePath.toFile().exists() && inpFilePath.toFile().canRead() &&
-                    outFilePath.toFile().exists() && outFilePath.toFile().canRead())) {
-                throw new IOException();
+
+            if (inpFilePath.toFile().isDirectory()) {
+                System.out.println(inpFilePath.toString() + Messages.PATH_IS_DIRECTORY);
+                return;
             }
+            if (!inpFilePath.toFile().exists()) {
+                System.out.println(inpFilePath.toString() + Messages.FILE_DOES_NOT_EXIST);
+                return;
+            }
+            if (!inpFilePath.toFile().canRead()) {
+                System.out.println(inpFilePath.toString() + Messages.FILE_IS_NOT_READABLE);
+                return;
+            }
+
+            if (outFilePath.toFile().isDirectory()) {
+                System.out.println(outFilePath.toString() + Messages.PATH_IS_DIRECTORY);
+                return;
+            }
+            if (outFilePath.toFile().exists()) {
+                System.out.println(outFilePath.toString() + Messages.FILE_ALREADY_EXIST);
+                return;
+            }
+            if (!outFilePath.toFile().canWrite()) {
+                System.out.println(outFilePath.toString() + Messages.FILE_IS_NOT_WRITABLE);
+                return;
+            }
+            if (!outFilePath.toFile().createNewFile()) {
+                System.out.println("Что-то пошло не так");
+                return;
+            }
+
             Assembler assembler = new Assembler(inpFilePath, outFilePath);
             assembler.assemble();
         }
