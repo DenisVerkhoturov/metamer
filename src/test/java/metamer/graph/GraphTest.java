@@ -1,5 +1,6 @@
 package metamer.graph;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 class GraphTest {
     @Test
+    @DisplayName("all nodes should present when create graph")
     public void testIfAllNodesArePresent() {
         Graph gr = new Graph(new HashMap<>(), new HashMap<>(), 3);
         gr.createFromStream(Stream.of("AATR", "ART"));
@@ -26,6 +28,7 @@ class GraphTest {
     }
 
     @Test
+    @DisplayName("nodes should be connected when there is only one way to connect them")
     public void testOptimization() {
         Graph gr = Graph.of(
                 3,
@@ -46,6 +49,7 @@ class GraphTest {
     }
 
     @Test
+    @DisplayName("node should not present if there is no way to connect parts")
     public void testIfNodeNotPresent() {
         Graph gr = new Graph(new HashMap<>(), new HashMap<>(), 3);
         gr.createFromStream(Stream.of("AAA", "TTT"));
@@ -53,6 +57,7 @@ class GraphTest {
     }
 
     @Test
+    @DisplayName("node should have information about all neighbors when graph created")
     public void testIfEdgeContainsAllNodes() {
         Graph gr = new Graph(new HashMap<>(), new HashMap<>(), 3);
         gr.createFromStream(Stream.of("AARAT", "AAT"));
@@ -60,6 +65,7 @@ class GraphTest {
     }
 
     @Test
+    @DisplayName("kmer field should be initializes correctly when graph created")
     public void testCorrectnessOfNodeKmerField() {
         Graph gr = new Graph(new HashMap<>(), new HashMap<>(), 3);
         gr.createFromStream(Stream.of("AARAT", "AAT"));
