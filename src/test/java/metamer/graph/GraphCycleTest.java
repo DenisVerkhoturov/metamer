@@ -22,12 +22,12 @@ public class GraphCycleTest {
         GraphCycle graphCycle = new GraphCycle(graph);
 
         final Map<Node, GraphCycle.NodeDescriptor> colouredNodes = graphCycle.getColouredNodes();
-        for (Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
+        for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
             assertThat(colouredNodes, hasKey(entry.getValue()));
         }
 
         final Map<String, Node> nodes = graph.getNodes();
-        for (Map.Entry<Node, GraphCycle.NodeDescriptor> entry : colouredNodes.entrySet()) {
+        for (final Map.Entry<Node, GraphCycle.NodeDescriptor> entry : colouredNodes.entrySet()) {
             assertThat(nodes, hasValue(entry.getKey()));
         }
     }

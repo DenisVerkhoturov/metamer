@@ -23,7 +23,7 @@ public class FileWriter<T> implements Writer<T> {
         this.parser = parser;
     }
 
-    public void write(Stream<T> records) {
+    public void write(final Stream<T> records) {
         final Stream<String> lines = this.parser().show(records);
         final File file = path.toFile();
         try {
@@ -38,14 +38,14 @@ public class FileWriter<T> implements Writer<T> {
                 try {
                     bufferedWriter.write(line);
                     bufferedWriter.newLine();
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     e.printStackTrace();
                 }
             });
             bufferedWriter.close();
             fileWriter.close();
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
 

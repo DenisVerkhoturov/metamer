@@ -18,17 +18,17 @@ public class FastQ implements Parser<Record> {
     }
 
     @Override
-    public Stream<String> show(Record record) {
+    public Stream<String> show(final Record record) {
         return null;
     }
 
     @Override
-    public Stream<String> show(Stream<Record> records) {
+    public Stream<String> show(final Stream<Record> records) {
         return null;
     }
 
     @Override
-    public Stream<Record> read(Stream<String> lines) {
+    public Stream<Record> read(final Stream<String> lines) {
         List<String> inpStrings = lines.collect(Collectors.toList());
         List<Record> outList = new ArrayList<>();
 
@@ -39,7 +39,7 @@ public class FastQ implements Parser<Record> {
             for (int i = 0; i < inpStrings.size(); i += 4) {
                 outList.add(formRecord(inpStrings.subList(i, i + 4)));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.out.println(e.getMessage());
         }
 
@@ -48,7 +48,7 @@ public class FastQ implements Parser<Record> {
     }
 
     @Override
-    public Record read(List<String> lines) {
+    public Record read(final List<String> lines) {
         return null;
     }
 
@@ -56,7 +56,7 @@ public class FastQ implements Parser<Record> {
         return instance;
     }
 
-    public static Record formRecord(List<String> strings) throws ParsingException {
+    public static Record formRecord(final List<String> strings) throws ParsingException {
         String tmpId;
         String tmpDescription;
 

@@ -1,7 +1,7 @@
 package metamer.utils;
 
 public class ParsingException extends RuntimeException {
-    public ParsingException(String message) {
+    public ParsingException(final String message) {
         super(message);
     }
 }

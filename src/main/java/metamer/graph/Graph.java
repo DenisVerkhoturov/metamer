@@ -19,18 +19,18 @@ public class Graph {
     private Map<String, Node> nodes;
     private int k;
 
-    public Graph(final Map<Node, List<Node>> neighbors, final Map<String, Node> nodes, int k) {
+    public Graph(final Map<Node, List<Node>> neighbors, final Map<String, Node> nodes, final int k) {
         this.neighbors = neighbors;
         this.nodes = nodes;
         this.k = k;
     }
 
-    private void createNodesMap(String str) {
+    private void createNodesMap(final String str) {
         this.nodes.computeIfAbsent(str.substring(0, k - 1), Node::new);
         this.nodes.computeIfAbsent(str.substring(1, k), Node::new);
     }
 
-    public void makeNodes(String str) {
+    public void makeNodes(final String str) {
         GraphUtils.slidingWindow(str, k).forEach(this::createNodesMap);
     }
 
@@ -51,7 +51,7 @@ public class Graph {
         Map<Node, List<Node>> neighborsOptimized = neighbors;
         Set<String> used = new HashSet<>();
 
-        for (Map.Entry<String, Node> entry : nodes.entrySet()) {
+        for (final Map.Entry<String, Node> entry : nodes.entrySet()) {
             final Node first = entry.getValue();
             if (used.contains(first.kmer)) {
                 continue;
@@ -82,7 +82,7 @@ public class Graph {
             neighborsOptimized.put(node, neighborsOptimized.get(last));
             neighborsOptimized.remove(last);
             nodesOptimized.remove(last.kmer);
-            for (Map.Entry<Node, List<Node>> entry2 : neighborsOptimized.entrySet()) {
+            for (final Map.Entry<Node, List<Node>> entry2 : neighborsOptimized.entrySet()) {
                 if (entry2.getValue().contains(first)) {
                     entry2.getValue().add(node);
                     entry2.getValue().remove(first);
@@ -92,10 +92,10 @@ public class Graph {
         return new Graph(neighborsOptimized, nodesOptimized, k);
     }
 
-    public void createFromStream(Stream<String> stream) {
+    public void createFromStream(final Stream<String> stream) {
         stream.forEach(this::makeNodes);
-        for (Map.Entry<String, Node> entry : nodes.entrySet()) {
-            for (Map.Entry<String, Node> entry2 : nodes.entrySet()) {
+        for (final Map.Entry<String, Node> entry : nodes.entrySet()) {
+            for (final Map.Entry<String, Node> entry2 : nodes.entrySet()) {
                 List<Node> list = this.neighbors.getOrDefault(entry.getValue(), new ArrayList<>());
 
                 final String firstKey = entry.getKey().substring(1);
@@ -113,7 +113,7 @@ public class Graph {
     public static Graph of(final int k, final Map.Entry<Node, Node>... edges) {
         final Map<String, Node> nodes = new HashMap<>();
         final Map<Node, List<Node>> neighbors = new HashMap<>();
-        for (Map.Entry<Node, Node> edge : edges) {
+        for (final Map.Entry<Node, Node> edge : edges) {
             final Node left = edge.getKey();
             final Node right = edge.getValue();
             nodes.putIfAbsent(left.kmer, left);

@@ -3,16 +3,10 @@ package metamer.cmdparser;
 import org.apache.commons.cli.ParseException;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import static java.util.stream.Collectors.toList;
-import static metamer.utils.Paths.resource;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

@@ -26,7 +26,7 @@ public class FileReader<T> implements Reader {
     public Stream<T> read() {
         try (final Stream<String> lines = Files.lines(path)) {
             return this.parser().read(lines);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Can't parse :(");
         }
     }
