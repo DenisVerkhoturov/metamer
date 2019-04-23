@@ -9,7 +9,7 @@ public class Record {
     public final String sequence;
     public final byte[] quality;
 
-    public Record(String id, String description, String sequence, byte[] quality) {
+    public Record(final String id, final String description, final String sequence, final byte[] quality) {
         this.id = id;
         this.description = description;
         this.sequence = sequence;
@@ -17,7 +17,7 @@ public class Record {
     }
 
     @Override
-    public  boolean equals(Object obj) {
+    public  boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }

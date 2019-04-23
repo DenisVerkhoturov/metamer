@@ -7,18 +7,18 @@ public class Record {
     public final String additionalInformation;
     public final String sequence;
 
-    public Record(String uniqueIdentifier, String additionalInformation, String sequence) {
+    public Record(final String uniqueIdentifier, final String additionalInformation, final String sequence) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.additionalInformation = additionalInformation;
         this.sequence = sequence;
     }
 
-    public Record(String uniqueIdentifier, String sequence) {
+    public Record(final String uniqueIdentifier, final String sequence) {
         this(uniqueIdentifier, "", sequence);
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }

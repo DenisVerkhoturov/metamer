@@ -15,7 +15,7 @@ public class Assembler {
     private final Path inputFile;
     private final Path outputFile;
 
-    public Assembler(Path inputFile, Path outputFile) {
+    public Assembler(final Path inputFile, final Path outputFile) {
         this.inputFile = inputFile;
         this.outputFile = outputFile;
     }

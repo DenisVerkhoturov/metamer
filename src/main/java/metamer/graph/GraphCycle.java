@@ -28,7 +28,7 @@ public class GraphCycle {
         this.graph = graph;
 
         colouredNodes = new HashMap<>();
-        for (Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
+        for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
             colouredNodes.put(entry.getValue(), new NodeDescriptor());
         }
     }
@@ -40,7 +40,7 @@ public class GraphCycle {
     private void dfc(final Node currentNode, final NodeDescriptor currentDescriptor) {
         currentDescriptor.color = NodeColor.GRAY;
         final List<Node> relatedNodes = graph.getNeighbors().get(currentNode);
-        for (Node relatedNode : relatedNodes) {
+        for (final Node relatedNode : relatedNodes) {
             final NodeDescriptor relatedNodeDescriptor = colouredNodes.get(relatedNode);
             if (relatedNodeDescriptor.color.equals(NodeColor.WHITE)) {
                 relatedNodeDescriptor.previousNode = currentNode;
@@ -75,7 +75,7 @@ public class GraphCycle {
     }
 
     public String findCycle() {
-        for (Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
+        for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
             final Node currentNode = entry.getValue();
             final NodeDescriptor currentDescriptor = colouredNodes.get(currentNode);
             if (currentDescriptor.color.equals(NodeColor.WHITE)) {

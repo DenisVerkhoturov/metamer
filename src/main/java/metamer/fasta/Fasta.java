@@ -19,7 +19,7 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Stream<String> show(Record record) {
+    public Stream<String> show(final Record record) {
         List<String> sequences = new ArrayList<>();
 
         StringBuilder builder = new StringBuilder();
@@ -57,11 +57,11 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Stream<Record> read(Stream<String> inpStream) {
+    public Stream<Record> read(final Stream<String> inpStream) {
         List<List<String>> list = new ArrayList<>();
         int counter = -1;
 
-        for (String str : inpStream.collect(Collectors.toList())) {
+        for (final String str : inpStream.collect(Collectors.toList())) {
             if (str.startsWith(IDENTIFIER_PREFIX)) {
                 list.add(new ArrayList<>());
                 counter++;
@@ -69,7 +69,7 @@ public class Fasta implements Parser<Record> {
             list.get(counter).add(str);
         }
         List<Record> out = new ArrayList<>();
-        for (List<String> strings : list) {
+        for (final List<String> strings : list) {
             out.add(read(strings));
         }
         return out.stream();

@@ -7,14 +7,14 @@ public class Node {
     public int nin;
     public int nout;
 
-    Node(String kmer) {
+    Node(final String kmer) {
         this.kmer = kmer;
         this.nin = 0;
         this.nout = 0;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }

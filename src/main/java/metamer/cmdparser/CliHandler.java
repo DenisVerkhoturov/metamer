@@ -36,11 +36,11 @@ public class CliHandler {
         return command;
     }
 
-    public static void setFilename(Path filename) {
+    public static void setFilename(final Path filename) {
         CliHandler.filename = filename;
     }
 
-    public static void setCommand(String command) {
+    public static void setCommand(final String command) {
         CliHandler.command = command;
     }
 
@@ -61,7 +61,7 @@ public class CliHandler {
         writer.flush();
     }
 
-    public static void parse(String[] args) throws ParseException, IOException {
+    public static void parse(final String[] args) throws ParseException, IOException {
 
         Options options = new Options();
         options.addOption("c", "command", true, "Which command to do");
@@ -148,9 +148,9 @@ public class CliHandler {
     public static void main(final String... args) {
         try {
             parse(args);
-        } catch (ParseException exp) {
+        } catch (final ParseException exp) {
             System.out.println("Unexpected exception:" + exp.getMessage());
-        } catch (IOException ioExp) {
+        } catch (final IOException ioExp) {
             System.out.println("File doesn't exist");
         }
     }

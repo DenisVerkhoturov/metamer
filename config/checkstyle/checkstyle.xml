@@ -55,6 +55,8 @@
             <property name="illegalPkgs" value="junit.framework"/>
         </module>
 
+        <module name="UnusedImports"/>
+
         <!-- METHOD LENGTH CHECKS -->
 
         <module name="MethodLength">
@@ -113,6 +115,9 @@
             <property name="severity" value="error"/>
         </module>
 
+        <module name="FinalParameters">
+            <property name="tokens" value="METHOD_DEF, CTOR_DEF, LITERAL_CATCH, FOR_EACH_CLAUSE"/>
+        </module>
 
         <!-- LENGTH and CODING CHECKS -->
 
@@ -134,6 +139,7 @@
         <module name="NeedBraces">
             <property name="severity" value="error"/>
             <property name="tokens" value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO"/>
+            <property name="allowSingleLineStatement" value="true"/>
         </module>
 
         <module name="UpperEll">
