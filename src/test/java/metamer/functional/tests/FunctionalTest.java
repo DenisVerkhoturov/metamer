@@ -1,11 +1,11 @@
 package metamer.functional.tests;
 
 import metamer.cmdparser.CliHandler;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 
 import java.io.ByteArrayOutputStream;
@@ -69,24 +69,28 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("help option should be shown when there is no command in cmd")
     public void emptyInputTest() {
         CliHandler.main();
         assertThat(testOut.toString(), is(usage));
     }
 
     @Test
+    @DisplayName("help option should be shown when there is -h key")
     public void helpTest() {
         CliHandler.main("-h");
         assertThat(testOut.toString(), is(usage));
     }
 
     @Test
+    @DisplayName("help option should be shown when there is --help key")
     public void longHelpTest() {
         CliHandler.main("--help");
         assertThat(testOut.toString(), is(usage));
     }
 
     @Test
+    @DisplayName("message should be shown when input file is directory")
     public void directoryAsInputFileTest() throws IOException {
         final Path inputPath = temporaryDirectory("inp");
         final Path outputPath = temporaryFile("out", ".fasta");
@@ -98,6 +102,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("message should be shown when output file is directory")
     public void directoryAsOutputFileTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryDirectory("out");
@@ -109,6 +114,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("message should be shown when input file is not readable")
     public void notReadableInputFileTest() throws IOException {
         final Path inputPath = Files.createTempFile("inaccessible", ".fasta",
                 asFileAttribute(fromString("---------")));
@@ -121,6 +127,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("message should be shown when output file is not writable")
     public void notWritableOutputFileTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryFile("inaccessible", ".fasta",
@@ -134,6 +141,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("message should be shown when input file doesn't exist")
     public void inputFileDoesNotExistTest() throws IOException {
         final Path nonexistentPath = Paths.get("SomeNonexistentInputFile.fasta");
         final Path outputPath = temporaryFile("out", ".fasta");
@@ -145,6 +153,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("message should be shown when output file already exists")
     public void outputFileAlreadyExistTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryFile("out", ".fasta");
@@ -157,6 +166,7 @@ public class FunctionalTest {
 
     @Disabled("To fix")
     @Test
+    @DisplayName("project should work in a correct way when ran")
     public void correctInputTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         Files.write(inputPath, content.getBytes());
@@ -173,6 +183,7 @@ public class FunctionalTest {
 
     @Disabled("Writing to stdout is not implemented yet")
     @Test
+    @DisplayName("stdout should contain expected string when there is no output file")
     public void writeInStdoutTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         Files.write(inputPath, content.getBytes());
@@ -187,6 +198,7 @@ public class FunctionalTest {
 
     @Disabled("Reading from stdin is not implemented yet")
     @Test
+    @DisplayName("stdin should be a source of information when there is no input file")
     public void readingFromStdinTest() throws IOException {
         final Path outputPath = temporaryFile("out", ".fasta");
         outputPath.toFile().delete();
@@ -200,6 +212,7 @@ public class FunctionalTest {
 
     @Disabled("Reading from stdin and writing to stdout are not implemented yet")
     @Test
+    @DisplayName("stdin should be source & stdout should contain result when there is no input & output files")
     public void readingFromStdinWriteInStdoutTest() {
         final String expected = ">cycle from file: " + System.in.toString();
 
