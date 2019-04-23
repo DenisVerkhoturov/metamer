@@ -1,5 +1,6 @@
 package metamer.graph;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import static org.hamcrest.Matchers.hasValue;
 public class GraphCycleTest {
 
     @Test
+    @DisplayName("colouredNodes should contain all nodes when the search of cycle in graph ended")
     public void testIfAllNodesArePresent() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("AATR", "ART"));
@@ -33,6 +35,7 @@ public class GraphCycleTest {
     }
 
     @Test
+    @DisplayName("colouredNodes should contain only white nodes when nodes are uninitialized")
     public void testAllUninitializedNodesAreWhite() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDE"));
@@ -42,6 +45,7 @@ public class GraphCycleTest {
     }
 
     @Test
+    @DisplayName("colouredNodes should contain only black nodes when nodes are initialized")
     public void testAllInitializedNodesAreBlack() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDEA"));
@@ -52,6 +56,7 @@ public class GraphCycleTest {
     }
 
     @Test
+    @DisplayName("graphCycle field should be empty when there is no cycle in graph")
     public void testNoCycleInGraph() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDE"));
@@ -60,6 +65,7 @@ public class GraphCycleTest {
     }
 
     @Test
+    @DisplayName("graphCycle field should contain correct cycle when there is cycle in graph")
     public void testCorrectCycleGraph() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDEA"));
