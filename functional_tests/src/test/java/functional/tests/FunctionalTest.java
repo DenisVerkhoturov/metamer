@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -130,6 +132,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisabledOnOs(OS.WINDOWS)
     @DisplayName("message should be shown when input file is not readable")
     public void notReadableInputFileTest() throws IOException {
         final Path inputPath = Files.createTempFile("inaccessible", ".fasta",
@@ -143,6 +146,7 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisabledOnOs(OS.WINDOWS)
     @DisplayName("message should be shown when output file is not writable")
     public void notWritableOutputFileTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
