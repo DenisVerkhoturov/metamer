@@ -1,2 +1,17 @@
 language: java
 jdk: oraclejdk11
+
+matrix:
+  include:
+    - os: linux
+      language: java
+
+    - os: windows
+      language: shell
+      env: JDK=j11;
+
+    - os: osx
+      language: java
+
+install:
+  - ./.travis/install.sh

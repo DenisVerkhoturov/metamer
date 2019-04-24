@@ -7,7 +7,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,6 +25,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 public class FunctionalTest {
     private final static PrintStream standardOut = System.out;
@@ -61,6 +61,7 @@ public class FunctionalTest {
     @BeforeEach
     public void setUpStream() {
         System.setOut(new PrintStream(testOut));
+        assumeFalse(System.getProperty("os.name").toLowerCase().contains("windows"));
     }
 
     @AfterEach
