@@ -1,6 +1,7 @@
 package metamer.functional.tests;
 
 import metamer.cmdparser.CliHandler;
+import metamer.cmdparser.CliHandlerMessages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,9 +18,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileAttribute;
 
+import static metamer.utils.Strings.multiline;
 import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
 import static java.nio.file.attribute.PosixFilePermissions.fromString;
-import static metamer.utils.Strings.multiline;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -32,11 +33,13 @@ public class FunctionalTest {
     private final OutputStream testOut = new ByteArrayOutputStream();
     private final String newLine = System.lineSeparator();
     private final String usage = multiline(
-            "usage: java metamer.jar [-c <arg>] [-f <arg>] [-h]",
+            "usage: java metamer.jar [-f <arg>] [-h] [-i <arg>] [-k <arg>] [-o <arg>]",
             "Options",
-            "   -c,--command <arg>      Which command to do",
-            "   -f,--filepath <arg>     Path to file",
-            "   -h,--help               Present help",
+            "   -f,--format <arg>     Format of input data: fasta or fastq",
+            "   -h,--help             Present help",
+            "   -i,--input <arg>      Input file with reads to be analyzed",
+            "   -k <arg>              Length of k mer in De Bruijn graph",
+            "   -o,--output <arg>     Output file to write result to",
             "-- HELP --");
     private final String content = multiline(
             ">id0 test",
@@ -76,6 +79,20 @@ public class FunctionalTest {
     }
 
     @Test
+    @DisplayName("message should be shown when there is no key -k")
+    public void noLengthTest() {
+        CliHandler.main("-f", "fasta");
+        assertThat(testOut.toString(), is(CliHandlerMessages.NO_LENGTH + newLine));
+    }
+
+    @Test
+    @DisplayName("message should be shown when there is no key -f")
+    public void noFormatTest() {
+        CliHandler.main("-k", "3");
+        assertThat(testOut.toString(), is(CliHandlerMessages.NO_FORMAT +  newLine));
+    }
+
+    @Test
     @DisplayName("help option should be shown when there is -h key")
     public void helpTest() {
         CliHandler.main("-h");
@@ -95,9 +112,9 @@ public class FunctionalTest {
         final Path inputPath = temporaryDirectory("inp");
         final Path outputPath = temporaryFile("out", ".fasta");
 
-        final String expected = inputPath.toString() + CliHandler.Messages.PATH_IS_DIRECTORY + newLine;
+        final String expected = inputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY + newLine;
 
-        CliHandler.main(inputPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(expected));
     }
 
@@ -107,9 +124,9 @@ public class FunctionalTest {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryDirectory("out");
 
-        final String expected = outputPath.toString() + CliHandler.Messages.PATH_IS_DIRECTORY + newLine;
+        final String expected = outputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY + newLine;
 
-        CliHandler.main(inputPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(expected));
     }
 
@@ -120,9 +137,9 @@ public class FunctionalTest {
                 asFileAttribute(fromString("---------")));
         final Path outputPath = temporaryFile("out", "fasta");
 
-        final String expected = inputPath.toString() + CliHandler.Messages.FILE_IS_NOT_READABLE + newLine;
+        final String expected = inputPath.toString() + CliHandlerMessages.FILE_IS_NOT_READABLE + newLine;
 
-        CliHandler.main(inputPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(expected));
     }
 
@@ -134,9 +151,9 @@ public class FunctionalTest {
                 asFileAttribute(fromString("---------")));
         outputPath.toFile().delete();
 
-        final String expected = outputPath.toString() + CliHandler.Messages.FILE_IS_NOT_WRITABLE + newLine;
+        final String expected = outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE + newLine;
 
-        CliHandler.main(inputPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(expected));
     }
 
@@ -146,9 +163,9 @@ public class FunctionalTest {
         final Path nonexistentPath = Paths.get("SomeNonexistentInputFile.fasta");
         final Path outputPath = temporaryFile("out", ".fasta");
 
-        final String expected = nonexistentPath.toString() + CliHandler.Messages.FILE_DOES_NOT_EXIST + newLine;
+        final String expected = nonexistentPath.toString() + CliHandlerMessages.FILE_DOES_NOT_EXIST + newLine;
 
-        CliHandler.main(nonexistentPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", nonexistentPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(expected));
     }
 
@@ -158,9 +175,9 @@ public class FunctionalTest {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryFile("out", ".fasta");
 
-        final String expected = outputPath.toString() + CliHandler.Messages.FILE_ALREADY_EXIST + newLine;
+        final String expected = outputPath.toString() + CliHandlerMessages.FILE_ALREADY_EXIST + newLine;
 
-        CliHandler.main(inputPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(expected));
     }
 
@@ -176,7 +193,7 @@ public class FunctionalTest {
         final String expected1 = ">cycle from file: " + inputPath.toString();
         final String expected2 = "ABCDE";
 
-        CliHandler.main(inputPath.toString(), outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(outputPath.toFile(), anExistingFile());
         assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
     }
@@ -191,7 +208,7 @@ public class FunctionalTest {
         final String expected1 = ">cycle from file: " + inputPath.toString();
         final String expected2 = "ABCDE";
 
-        CliHandler.main(inputPath.toString(), "-stdout");
+        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString());
         assertThat(testOut.toString(), containsString(expected1));
         assertThat(testOut.toString(), containsString(expected2));
     }
@@ -205,7 +222,7 @@ public class FunctionalTest {
 
         final String expected = ">cycle from file: " + System.in.toString();
 
-        CliHandler.main("-stdin", outputPath.toString());
+        CliHandler.main("-k", "3", "-format", "fasta", "-o", outputPath.toString());
         assertThat(outputPath.toFile(), anExistingFile());
         assertThat(Files.lines(outputPath).collect(toList()), contains(expected));
     }
@@ -216,7 +233,7 @@ public class FunctionalTest {
     public void readingFromStdinWriteInStdoutTest() {
         final String expected = ">cycle from file: " + System.in.toString();
 
-        CliHandler.main("-stdin", "-stdout");
+        CliHandler.main("-k", "3", "-format", "fasta");
         assertThat(testOut.toString(), containsString(expected));
     }
 }
