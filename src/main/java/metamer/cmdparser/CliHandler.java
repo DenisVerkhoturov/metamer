@@ -8,8 +8,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Path;
@@ -17,31 +15,19 @@ import java.nio.file.Paths;
 
 public class CliHandler {
 
-    private static Path filename;
-    private static String command;
+    private static Path inputPath;
+    private static Path outputPath;
+    private static Format format;
+    private static IOFormat iFormat;
+    private static IOFormat oFormat;
+    private static int k;
 
-    public class Messages {
-        public static final String PATH_IS_DIRECTORY = " is a directory. Please, enter required file";
-        public static final String FILE_ALREADY_EXIST = " file already exist and cannot be overwritten";
-        public static final String FILE_DOES_NOT_EXIST = " file doesn't exist";
-        public static final String FILE_IS_NOT_READABLE = " file is not permitted to be read";
-        public static final String FILE_IS_NOT_WRITABLE = " file is not permitted to be written";
+    enum Format {
+        FASTA, FASTQ
     }
 
-    public static Path getFilename() {
-        return filename;
-    }
-
-    public static String getCommand() {
-        return command;
-    }
-
-    public static void setFilename(final Path filename) {
-        CliHandler.filename = filename;
-    }
-
-    public static void setCommand(final String command) {
-        CliHandler.command = command;
+    enum IOFormat {
+        FILE, STDIN, STDOUT
     }
 
     private static void printHelp(
@@ -61,86 +47,151 @@ public class CliHandler {
         writer.flush();
     }
 
-    public static void parse(final String[] args) throws ParseException, IOException {
+    public static void parse(final String[] args) throws ParseException, NumberFormatException {
 
         Options options = new Options();
-        options.addOption("c", "command", true, "Which command to do");
         options.addOption("h", "help", false, "Present help");
-        options.addOption("f", "filepath", true, "Path to file");
+        options.addOption("k", true, "Length of k mer in De Bruijn graph");
+        options.addOption("f", "format", true, "Format of input data: fasta or fastq");
+        options.addOption("i", "input", true, "Input file with reads to be analyzed");
+        options.addOption("o", "output", true, "Output file to write result to");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine line = parser.parse(options, args);
 
+        if (args.length == 0) {
+            printHelp(options, 80, "Options", "-- HELP --", 3, 5, true, System.out);
+            return;
+        }
+
         if (line.hasOption("help")) {
             printHelp(options, 80, "Options", "-- HELP --", 3, 5, true, System.out);
+            return;
         }
-        if (line.hasOption("filepath")) {
-            String com = line.getOptionValue("f", null);
 
-            if (com == null) {
-                System.out.println("Wrong param for filepath option");
+        if (line.hasOption("k")) {
+            String length = line.getOptionValue("k", null);
+
+            if (length == null) {
+                System.out.println(CliHandlerMessages.INVALID_LENGTH);
+                return;
             } else {
-                setFilename(Paths.get(com));
-                File file = filename.toFile();
-                if (!(file.exists() && file.isFile())) {
-                    throw new IOException();
+                CliHandler.k = Integer.parseInt(length);
+            }
+        } else {
+            System.out.println(CliHandlerMessages.NO_LENGTH);
+            return;
+        }
+
+        if (line.hasOption("format")) {
+            String format = line.getOptionValue("f", null);
+
+            if (format.equals("fasta")) {
+                CliHandler.format = Format.FASTA;
+            } else if (format.equals("fastq")) {
+                CliHandler.format = Format.FASTQ;
+            } else {
+                System.out.println(CliHandlerMessages.INVALID_FORMAT);
+                return;
+            }
+        } else {
+            System.out.println(CliHandlerMessages.NO_FORMAT);
+            return;
+        }
+
+        if (line.hasOption("input")) {
+            String inputPath = line.getOptionValue("i", null);
+
+            if (inputPath == null) {
+                System.out.println(CliHandlerMessages.NO_FILE_PATH);
+                return;
+            } else {
+                CliHandler.inputPath = Paths.get(inputPath);
+                CliHandler.iFormat = IOFormat.FILE;
+            }
+        } else {
+            CliHandler.iFormat = IOFormat.STDIN;
+        }
+
+        if (line.hasOption("output")) {
+            String outputPath = line.getOptionValue("o", null);
+
+            if (outputPath == null) {
+                System.out.println(CliHandlerMessages.NO_FILE_PATH);
+                return;
+            } else {
+                CliHandler.outputPath = Paths.get(outputPath);
+                CliHandler.oFormat = IOFormat.FILE;
+            }
+        } else {
+            CliHandler.oFormat = IOFormat.STDOUT;
+        }
+
+        if (inputPath != null) {
+            if (inputPath.toFile().isDirectory()) {
+                System.out.println(inputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY);
+                return;
+            }
+            if (!inputPath.toFile().exists()) {
+                System.out.println(inputPath.toString() + CliHandlerMessages.FILE_DOES_NOT_EXIST);
+                return;
+            }
+            if (!inputPath.toFile().canRead()) {
+                System.out.println(inputPath.toString() + CliHandlerMessages.FILE_IS_NOT_READABLE);
+                return;
+            }
+        }
+
+        if (outputPath != null) {
+            if (outputPath.toFile().isDirectory()) {
+                System.out.println(outputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY);
+                return;
+            }
+            if (outputPath.toFile().exists()) {
+                System.out.println(outputPath.toString() + CliHandlerMessages.FILE_ALREADY_EXIST);
+                return;
+            }
+            if (!outputPath.toFile().canWrite()) {
+                System.out.println(outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE);
+                return;
+            }
+        }
+
+        Assembler assembler;
+        switch (format) {
+            case FASTA: {
+                //Assembler constructors for fasta
+                if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
+                    assembler = new Assembler(inputPath, outputPath);
+                    assembler.assemble();
                 }
-                System.out.println("You enter filename " + filename);
+                if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
+                    //constructor + method assemble
+                }
+                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.FILE) {
+                    //constructor + method assemble
+                }
+                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.STDOUT) {
+                    //constructor + method assemble
+                }
+                break;
             }
-        }
-        if (line.hasOption("command")) {
-            String com = line.getOptionValue("c", null);
-
-            if (com == null) {
-                System.out.println("Wrong param for command option");
-            } else {
-                setCommand(com);
-            }
-        }
-
-        if (!(line.hasOption("c") || line.hasOption("f") || line.hasOption("h"))) {
-            if (args.length < 2) {
-                printHelp(options, 80, "Options", "-- HELP --", 3, 5, true, System.out);
-                return;
-            }
-
-            Path inpFilePath = Paths.get(args[0]);
-            Path outFilePath = Paths.get(args[1]);
-
-            if (inpFilePath.toFile().isDirectory()) {
-                System.out.println(inpFilePath.toString() + Messages.PATH_IS_DIRECTORY);
-                return;
-            }
-            if (!inpFilePath.toFile().exists()) {
-                System.out.println(inpFilePath.toString() + Messages.FILE_DOES_NOT_EXIST);
-                return;
-            }
-            if (!inpFilePath.toFile().canRead()) {
-                System.out.println(inpFilePath.toString() + Messages.FILE_IS_NOT_READABLE);
-                return;
-            }
-
-            if (outFilePath.toFile().isDirectory()) {
-                System.out.println(outFilePath.toString() + Messages.PATH_IS_DIRECTORY);
-                return;
-            }
-            if (outFilePath.toFile().exists()) {
-                System.out.println(outFilePath.toString() + Messages.FILE_ALREADY_EXIST);
-                return;
-            }
-            if (!outFilePath.toFile().canWrite()) {
-                System.out.println(outFilePath.toString() + Messages.FILE_IS_NOT_WRITABLE);
-                return;
-            }
-            if (!outFilePath.toFile().createNewFile()) {
-                System.out.println("Что-то пошло не так");
-                return;
-            }
-
-            String type = "fasta";
-            if (type.equals("fasta")) {
-                Assembler assembler = new Assembler(inpFilePath, outFilePath);
-                assembler.assemble();
+            case FASTQ: {
+                //Assembler constructors for fastq and certain i format and o format
+                if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
+                    assembler = new Assembler(inputPath, outputPath);
+                    assembler.assemble();
+                }
+                if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
+                    //constructor + method assemble
+                }
+                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.FILE) {
+                    //constructor + method assemble
+                }
+                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.STDOUT) {
+                    //constructor + method assemble
+                }
+                break;
             }
         }
     }
@@ -149,9 +200,9 @@ public class CliHandler {
         try {
             parse(args);
         } catch (final ParseException exp) {
-            System.out.println("Unexpected exception:" + exp.getMessage());
-        } catch (final IOException ioExp) {
-            System.out.println("File doesn't exist");
+            System.out.println(CliHandlerMessages.NO_ARGUMENT + exp.getMessage());
+        } catch (final NumberFormatException numExp) {
+            System.out.println(CliHandlerMessages.INVALID_FORMAT + numExp.getMessage());
         }
     }
 }

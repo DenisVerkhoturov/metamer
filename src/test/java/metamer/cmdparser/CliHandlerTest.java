@@ -1,64 +1,80 @@
 package metamer.cmdparser;
 
 import org.apache.commons.cli.ParseException;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import java.nio.file.Paths;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 class CliHandlerTest {
+    private final String newLine = System.lineSeparator();
 
     @Test
-    @DisplayName("filename field should be initialized when there is parameter and -f key")
-    public void testFilenameReading() {
-        CliHandler.main("-f", "test.txt");
-        assertThat(CliHandler.getFilename(), equalTo(Paths.get("test.txt")));
-    }
+    @DisplayName("parse exception should be thrown when there is no argument after key -k")
+    public void nullLengthTest() {
+        String[] args = new String[] {"-k", "-f", "fasta"};
 
-    @Test
-    @DisplayName("comand field should be initialized when there is parameter & -c key")
-    public void testCommandReading() {
-        CliHandler.main("-c", "print");
-        assertThat(CliHandler.getCommand(), equalTo("print"));
-    }
-
-    @Test
-    @DisplayName("both filename & command field should be initialized when there is parameter")
-    public void testWithFilenameAndCommand() {
-        CliHandler.main("-c", "print", "-f", "test.txt");
-        assertThat(CliHandler.getCommand(), equalTo("print"));
-        assertThat(CliHandler.getFilename(), equalTo(Paths.get("test.txt")));
-    }
-
-    @Test
-    @DisplayName("comand field should be initialized when there is parameter & --command key")
-    public void longNameTest() {
-        CliHandler.main("--command", "print");
-        assertThat(CliHandler.getCommand(), equalTo("print"));
-    }
-
-    @Test
-    @DisplayName("exception should be  thrown when there is no parameter & -f key")
-    public void testIfFilenameArgIsNull() {
-        String[] args = {"-f"};
-        Throwable thrown = assertThrows(ParseException.class, () -> {
-            CliHandler.parse(args);
-        });
+        Throwable thrown = assertThrows(ParseException.class, () ->
+                CliHandler.parse(args));
         assertNotNull(thrown.getMessage());
     }
 
     @Test
-    @DisplayName("exception should be  thrown when there is no parameter & -c key")
-    public void testIfCommandArgIsNull() {
-        String[] args = {"-c"};
-        Throwable thrown = assertThrows(ParseException.class, () -> {
-            CliHandler.parse(args);
-        });
+    @DisplayName("parse exception should be thrown when there is no argument after key -f")
+    public void nullFormatTest() {
+        String[] args = new String[] {"-k", "abc", "-f"};
+
+        Throwable thrown = assertThrows(ParseException.class, () ->
+                CliHandler.parse(args));
         assertNotNull(thrown.getMessage());
+    }
+
+    @Test
+    @DisplayName("parse exception should be thrown when there is no argument after key -i")
+    public void nullInputPathTest() {
+        String[] args = new String[] {"-k", "abc", "-f", "fasta", "-i"};
+
+        Throwable thrown = assertThrows(ParseException.class, () ->
+                CliHandler.parse(args));
+        assertNotNull(thrown.getMessage());
+    }
+
+    @Test
+    @DisplayName("parse exception should be thrown when there is no argument after key -o")
+    public void nullOutputPathTest() {
+        String[] args = new String[] {"-k", "abc", "-f", "fasta", "-o"};
+
+        Throwable thrown = assertThrows(ParseException.class, () ->
+                CliHandler.parse(args));
+        assertNotNull(thrown.getMessage());
+    }
+
+    @Test
+    @DisplayName("number format exception should be thrown when key's -k argument is not integer")
+    public void invalidLengthTest() {
+        String[] args = new String[] {"-k", "abc", "-f", "fasta"};
+
+        Throwable thrown = assertThrows(NumberFormatException.class, () ->
+                CliHandler.parse(args));
+        assertNotNull(thrown.getMessage());
+    }
+
+    @Test
+    @DisplayName("message should be shown when key's -f argument is not fasta or fastq")
+    public void invalidFormatTest() {
+        PrintStream standardOut = System.out;
+        OutputStream testOut = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(testOut));
+
+        CliHandler.main("-k", "3", "-f", "fast");
+        assertThat(testOut.toString(), is(CliHandlerMessages.INVALID_FORMAT + newLine));
+
+        System.setOut(standardOut);
     }
 }
