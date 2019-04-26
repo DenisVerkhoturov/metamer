@@ -1,67 +1,79 @@
-buildscript {
-    configurations.maybeCreate('pitest')
-    dependencies {
-        pitest 'org.pitest:pitest-junit5-plugin:0.8'
-    }
-}
-
 plugins {
     id 'java'
     id 'checkstyle'
     id 'info.solidsoft.pitest' version '1.4.0'
 }
 
-version '1.0-SNAPSHOT'
-
-sourceCompatibility = 11
-targetCompatibility = 11
-
-jar {
-    manifest {
-        attributes 'Main-Class': 'metamer.cmdparser.CliHandler'
+allprojects {
+    buildscript {
+        configurations.maybeCreate('pitest')
+        dependencies {
+            pitest 'org.pitest:pitest-junit5-plugin:0.8'
+        }
     }
 
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+
+    version '1.0-SNAPSHOT'
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
+
+    jar {
+        manifest {
+            attributes 'Main-Class': 'metamer.cmdparser.CliHandler'
+        }
+
+        from {
+            configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
+
+    wrapper {
+        distributionType = Wrapper.DistributionType.ALL
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        compile 'commons-cli:commons-cli:1.4'
+        compile 'io.vavr:vavr:0.9.3'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+        testImplementation 'org.hamcrest:java-hamcrest:2.0.0.0'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+    }
+
+    test {
+        useJUnitPlatform()
+
+        testLogging {
+            events 'PASSED', 'FAILED', 'SKIPPED'
+            exceptionFormat = 'full'
+            showStackTraces = false
+        }
+    }
+
+    checkstyle {
+        toolVersion '7.8.1'
+    }
+
+    pitest {
+        testPlugin = 'junit5'
+        targetClasses = ['metamer.*']
+        targetTests = ['metamer.*']
+        outputFormats = ['XML', 'HTML']
+        mutators = ['ALL']
+        timestampedReports = false
+        threads = 4
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    compile 'commons-cli:commons-cli:1.4'
-    compile 'io.vavr:vavr:0.9.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testImplementation 'org.hamcrest:java-hamcrest:2.0.0.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
-}
-
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
-}
-
-test {
-    useJUnitPlatform()
-
-    testLogging {
-        events 'PASSED', 'FAILED', 'SKIPPED'
-        exceptionFormat = 'full'
-        showStackTraces = false
+project('functional_tests') {
+    dependencies {
+        compile project(':cli')
     }
 }
 
-checkstyle {
-    toolVersion '7.8.1'
-}
-
-pitest { 
-    testPlugin = 'junit5'
-    targetClasses = ['metamer.*']
-    targetTests = ['metamer.*']
-    outputFormats = ['XML', 'HTML']
-    mutators = ['ALL']
-    timestampedReports = false
-    threads = 4
-}
