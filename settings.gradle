@@ -1,2 +1,3 @@
 rootProject.name = 'metamer'
+include 'functional_tests', 'cli'
 
