@@ -8,7 +8,7 @@ matrix:
 
     - os: windows
       language: shell
-      env: JDK=j11;GRADLE_OPTS=-Dorg.gradle.daemon=false
+      env: CHOCO_PACKAGES=jdk11 GRADLE_OPTS=-Dorg.gradle.daemon=false
 
     - os: osx
       language: java
@@ -17,4 +17,4 @@ install:
   - ./.travis/install.sh
 
 script:
-  - gradle check
+  - ./.travis/script.sh
