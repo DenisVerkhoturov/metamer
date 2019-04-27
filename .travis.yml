@@ -1,6 +1,9 @@
 language: java
 jdk: oraclejdk11
 
+env:
+  - GRADLE_OPTS=-Dorg.gradle.daemon=false
+
 matrix:
   include:
     - os: linux
@@ -16,5 +19,5 @@ matrix:
 install:
   - ./.travis/install.sh
 
-shell:
+script:
   - gradlew check
