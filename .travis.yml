@@ -17,4 +17,4 @@ install:
   - ./.travis/install.sh
 
 script:
-  - ./.travis/script.sh
+  - bash gradlew check
