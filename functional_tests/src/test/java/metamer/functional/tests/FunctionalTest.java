@@ -17,8 +17,10 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
 
+import static metamer.functional.tests.Utils.temporaryFile;
+import static metamer.functional.tests.Utils.temporaryPath;
+import static metamer.functional.tests.Utils.temporaryDirectory;
 import static metamer.utils.Strings.multiline;
 import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
 import static java.nio.file.attribute.PosixFilePermissions.fromString;
@@ -48,19 +50,6 @@ public class FunctionalTest {
             ">id1 test",
             "DEAB"
     );
-
-    private static Path temporaryFile(final String name, final String suffix, final FileAttribute... attributes)
-            throws IOException {
-        final Path outputPath = Files.createTempFile(name, suffix, attributes);
-        outputPath.toFile().deleteOnExit();
-        return outputPath;
-    }
-
-    private static Path temporaryDirectory(final String name, final FileAttribute... attributes) throws IOException {
-        final Path outputPath = Files.createTempDirectory(name, attributes);
-        outputPath.toFile().deleteOnExit();
-        return outputPath;
-    }
 
     @BeforeEach
     public void setUpStream() {
@@ -150,9 +139,8 @@ public class FunctionalTest {
     @DisplayName("message should be shown when output file is not writable")
     public void notWritableOutputFileTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
-        final Path outputPath = temporaryFile("inaccessible", ".fasta",
-                asFileAttribute(fromString("---------")));
-        outputPath.toFile().delete();
+        final Path inaccessible = temporaryDirectory("inaccessible", asFileAttribute(fromString("---------")));
+        final Path outputPath = inaccessible.resolve("out.fasta");
 
         final String expected = outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE + newLine;
 
@@ -184,20 +172,18 @@ public class FunctionalTest {
         assertThat(testOut.toString(), is(expected));
     }
 
-    @Disabled("To fix")
     @Test
     @DisplayName("project should work in a correct way when ran")
     public void correctInputTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         Files.write(inputPath, content.getBytes());
-        final Path outputPath = temporaryFile("out", ".fasta");
-        outputPath.toFile().delete();
+
+        final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected1 = ">cycle from file: " + inputPath.toString();
-        final String expected2 = "ABCDE";
+        final String expected2 = "DEABCD";
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(outputPath.toFile(), anExistingFile());
         assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
     }
 
@@ -220,8 +206,7 @@ public class FunctionalTest {
     @Test
     @DisplayName("stdin should be a source of information when there is no input file")
     public void readingFromStdinTest() throws IOException {
-        final Path outputPath = temporaryFile("out", ".fasta");
-        outputPath.toFile().delete();
+        final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected = ">cycle from file: " + System.in.toString();
 

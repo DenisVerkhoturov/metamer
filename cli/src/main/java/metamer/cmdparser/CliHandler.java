@@ -147,12 +147,12 @@ public class CliHandler {
                 System.out.println(outputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY);
                 return;
             }
-            if (outputPath.toFile().exists()) {
-                System.out.println(outputPath.toString() + CliHandlerMessages.FILE_ALREADY_EXIST);
+            if (!outputPath.getParent().toFile().canWrite()) {
+                System.out.println(outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE);
                 return;
             }
-            if (!outputPath.toFile().canWrite()) {
-                System.out.println(outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE);
+            if (outputPath.toFile().exists()) {
+                System.out.println(outputPath.toString() + CliHandlerMessages.FILE_ALREADY_EXIST);
                 return;
             }
         }
@@ -162,7 +162,7 @@ public class CliHandler {
             case FASTA: {
                 //Assembler constructors for fasta
                 if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
-                    assembler = new Assembler(inputPath, outputPath);
+                    assembler = new Assembler(inputPath, outputPath, k);
                     assembler.assemble();
                 }
                 if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
@@ -179,7 +179,7 @@ public class CliHandler {
             case FASTQ: {
                 //Assembler constructors for fastq and certain i format and o format
                 if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
-                    assembler = new Assembler(inputPath, outputPath);
+                    assembler = new Assembler(inputPath, outputPath, k);
                     assembler.assemble();
                 }
                 if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {

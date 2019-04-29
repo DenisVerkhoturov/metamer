@@ -89,6 +89,7 @@ public class Graph {
                 }
             }
         }
+
         return new Graph(neighborsOptimized, nodesOptimized, k);
     }
 

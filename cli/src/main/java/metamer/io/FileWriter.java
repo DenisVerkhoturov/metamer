@@ -26,11 +26,14 @@ public class FileWriter<T> implements Writer<T> {
     public void write(final Stream<T> records) {
         final Stream<String> lines = this.parser().show(records);
         final File file = path.toFile();
+
         try {
+            file.createNewFile();
+
             if (!file.exists() || !file.isFile())  {
                 throw new IOException("Problems with file");
             }
-            file.createNewFile();
+
             java.io.FileWriter fileWriter = new java.io.FileWriter(file, false);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
