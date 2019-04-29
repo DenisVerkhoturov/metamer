@@ -21,7 +21,7 @@ public class GraphCycleTest {
     public void testIfAllNodesArePresent() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("AATR", "ART"));
-        GraphCycle graphCycle = new GraphCycle(graph);
+        GraphCycle graphCycle = new GraphCycle(graph, 3);
 
         final Map<Node, GraphCycle.NodeDescriptor> colouredNodes = graphCycle.getColouredNodes();
         for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
@@ -39,7 +39,7 @@ public class GraphCycleTest {
     public void testAllUninitializedNodesAreWhite() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDE"));
-        GraphCycle graphCycle = new GraphCycle(graph);
+        GraphCycle graphCycle = new GraphCycle(graph, 3);
         assertThat(graphCycle.getColouredNodes(), not(hasValue(GraphCycle.NodeColor.GRAY)));
         assertThat(graphCycle.getColouredNodes(), not(hasValue(GraphCycle.NodeColor.BLACK)));
     }
@@ -49,7 +49,7 @@ public class GraphCycleTest {
     public void testAllInitializedNodesAreBlack() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDEA"));
-        GraphCycle graphCycle = new GraphCycle(graph);
+        GraphCycle graphCycle = new GraphCycle(graph, 3);
         graphCycle.findCycle();
         assertThat(graphCycle.getColouredNodes(), not(hasValue(GraphCycle.NodeColor.WHITE)));
         assertThat(graphCycle.getColouredNodes(), not(hasValue(GraphCycle.NodeColor.GRAY)));
@@ -60,7 +60,7 @@ public class GraphCycleTest {
     public void testNoCycleInGraph() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDE"));
-        GraphCycle graphCycle = new GraphCycle(graph);
+        GraphCycle graphCycle = new GraphCycle(graph, 3);
         assertThat(graphCycle.findCycle(), is(""));
     }
 
@@ -70,7 +70,7 @@ public class GraphCycleTest {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
         graph.createFromStream(Stream.of("ABCDEA"));
         graph = graph.optimizeGraph();
-        GraphCycle graphCycle = new GraphCycle(graph);
-        assertThat(graphCycle.findCycle(), isOneOf("ABCDE", "BCDEA", "CDEAB", "DEABC", "EABCD"));
+        GraphCycle graphCycle = new GraphCycle(graph, 3);
+        assertThat(graphCycle.findCycle(), isOneOf("ABCDEA", "BCDEAB", "CDEABC", "DEABCD", "EABCDE"));
     }
 }

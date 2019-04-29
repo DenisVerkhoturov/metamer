@@ -9,6 +9,7 @@ public class GraphCycle {
     private final Graph graph;
     private Map<Node, NodeDescriptor> colouredNodes;
     private Node startCycle, endCycle;
+    private int k;
 
     enum NodeColor {
         WHITE, GRAY, BLACK
@@ -24,8 +25,9 @@ public class GraphCycle {
         }
     }
 
-    public GraphCycle(final Graph graph) {
+    public GraphCycle(final Graph graph, final int k) {
         this.graph = graph;
+        this.k = k;
 
         colouredNodes = new HashMap<>();
         for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
@@ -57,7 +59,6 @@ public class GraphCycle {
 
     private String createCycle() {
         if (startCycle == null || endCycle == null) {
-            System.out.println("No cycle in this graph!");
             return "";
         }
 
@@ -66,15 +67,16 @@ public class GraphCycle {
             return startCycle.kmer.substring(0, startCycle.kmer.length() - 1);
         }
         final StringBuilder tmpStr = new StringBuilder();
-        tmpStr.insert(0, startCycle.kmer.substring(0, 1));
+        tmpStr.insert(0, startCycle.kmer.substring(0, startCycle.kmer.length() - 2));
         while (!Objects.equals(startCycle, endCycle)) {
             startCycle = colouredNodes.get(startCycle).previousNode;
-            tmpStr.insert(0, startCycle.kmer.substring(0, startCycle.kmer.length() - 2));
+            tmpStr.insert(0, startCycle.kmer.substring(0, startCycle.kmer.length() - (k / 2 + 1)));
         }
         return tmpStr.toString();
     }
 
     public String findCycle() {
+        if (graph.getNodes().size() == 1) return graph.getNodes().values().toArray()[0].toString();
         for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
             final Node currentNode = entry.getValue();
             final NodeDescriptor currentDescriptor = colouredNodes.get(currentNode);

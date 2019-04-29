@@ -33,6 +33,8 @@ public class Node {
 
     @Override
     public String toString() {
-        return " Kmer = " + this.kmer + ", nout = " + this.nout + ", nin = " + this.nin + " ";
+        //return " Kmer = " + this.kmer + ", nout = " + this.nout + ", nin = " + this.nin + " ";
+        return this.kmer;
     }
+
 }
