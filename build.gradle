@@ -64,8 +64,10 @@ allprojects {
         testPlugin = 'junit5'
         targetClasses = ['metamer.*']
         targetTests = ['metamer.*']
-        outputFormats = ['XML', 'HTML']
+        mainSourceSets = [project(':cli').sourceSets.main]
+        testSourceSets = [project(':cli').sourceSets.test]
         mutators = ['ALL']
+        outputFormats = ['XML', 'HTML']
         timestampedReports = false
         threads = 4
     }
