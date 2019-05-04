@@ -17,18 +17,19 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
-import static metamer.functional.tests.Utils.temporaryFile;
-import static metamer.functional.tests.Utils.temporaryPath;
-import static metamer.functional.tests.Utils.temporaryDirectory;
-import static metamer.utils.Strings.multiline;
 import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
 import static java.nio.file.attribute.PosixFilePermissions.fromString;
 import static java.util.stream.Collectors.toList;
+import static metamer.functional.tests.Utils.temporaryDirectory;
+import static metamer.functional.tests.Utils.temporaryPath;
+import static metamer.functional.tests.Utils.temporaryFile;
+import static metamer.utils.Strings.multiline;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
 
 public class FunctionalTest {
@@ -37,13 +38,12 @@ public class FunctionalTest {
     private final String newLine = System.lineSeparator();
     private final String usage = multiline(
             "usage: java metamer.jar [-f <arg>] [-h] [-i <arg>] [-k <arg>] [-o <arg>]",
-            "Options",
             "   -f,--format <arg>     Format of input data: fasta or fastq",
             "   -h,--help             Present help",
             "   -i,--input <arg>      Input file with reads to be analyzed",
             "   -k <arg>              Length of k mer in De Bruijn graph",
             "   -o,--output <arg>     Output file to write result to",
-            "-- HELP --");
+            "--- HELP ---" + newLine);
     private final String content = multiline(
             ">id0 test",
             "ABCDEA",
@@ -70,16 +70,20 @@ public class FunctionalTest {
 
     @Test
     @DisplayName("message should be shown when there is no key -k")
-    public void noLengthTest() {
-        CliHandler.main("-f", "fasta");
+    public void noLengthTest() throws IOException {
+        final Path inputPath = temporaryFile("inp", ".fasta");
+        final Path outputPath = temporaryPath("out", ".fasta");
+        CliHandler.main("-f", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         assertThat(testOut.toString(), is(CliHandlerMessages.NO_LENGTH + newLine));
     }
 
     @Test
     @DisplayName("message should be shown when there is no key -f")
-    public void noFormatTest() {
-        CliHandler.main("-k", "3");
-        assertThat(testOut.toString(), is(CliHandlerMessages.NO_FORMAT +  newLine));
+    public void noFormatTest() throws IOException {
+        final Path inputPath = temporaryFile("inp", ".fasta");
+        final Path outputPath = temporaryPath("out", ".fasta");
+        CliHandler.main("-k", "3", "-i", inputPath.toString(), "-o", outputPath.toString());
+        assertThat(testOut.toString(), is(CliHandlerMessages.NO_FORMAT + newLine));
     }
 
     @Test
@@ -97,19 +101,19 @@ public class FunctionalTest {
     }
 
     @Test
-    @DisplayName("message should be shown when input file is directory")
-    public void directoryAsInputFileTest() throws IOException {
+    @DisplayName("input path should be invalid if it is a directory")
+    void inputPathShouldBeInvalidIfItIsADirectory() throws IOException {
         final Path inputPath = temporaryDirectory("inp");
-        final Path outputPath = temporaryFile("out", ".fasta");
+        final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected = inputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY + newLine;
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(expected));
+        assertThat(List.of(testOut.toString()), is(List.of(expected)));
     }
 
     @Test
-    @DisplayName("message should be shown when output file is directory")
+    @DisplayName("output path should be invalid if it is a directory")
     public void directoryAsOutputFileTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryDirectory("out");
@@ -117,7 +121,7 @@ public class FunctionalTest {
         final String expected = outputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY + newLine;
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(expected));
+        assertThat(List.of(testOut.toString()), is(List.of(expected)));
     }
 
     @Test
@@ -126,12 +130,12 @@ public class FunctionalTest {
     public void notReadableInputFileTest() throws IOException {
         final Path inputPath = Files.createTempFile("inaccessible", ".fasta",
                 asFileAttribute(fromString("---------")));
-        final Path outputPath = temporaryFile("out", "fasta");
+        final Path outputPath = temporaryPath("out", "fasta");
 
         final String expected = inputPath.toString() + CliHandlerMessages.FILE_IS_NOT_READABLE + newLine;
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(expected));
+        assertThat(List.of(testOut.toString()), is(List.of(expected)));
     }
 
     @Test
@@ -145,19 +149,19 @@ public class FunctionalTest {
         final String expected = outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE + newLine;
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(expected));
+        assertThat(List.of(testOut.toString()), is(List.of(expected)));
     }
 
     @Test
-    @DisplayName("message should be shown when input file doesn't exist")
-    public void inputFileDoesNotExistTest() throws IOException {
+    @DisplayName("input path should be invalid if it doesn't exist")
+    public void inputFileDoesNotExistTest() {
         final Path nonexistentPath = Paths.get("SomeNonexistentInputFile.fasta");
-        final Path outputPath = temporaryFile("out", ".fasta");
+        final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected = nonexistentPath.toString() + CliHandlerMessages.FILE_DOES_NOT_EXIST + newLine;
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", nonexistentPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(expected));
+        assertThat(List.of(testOut.toString()), is(List.of(expected)));
     }
 
     @Test
@@ -169,7 +173,7 @@ public class FunctionalTest {
         final String expected = outputPath.toString() + CliHandlerMessages.FILE_ALREADY_EXIST + newLine;
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(expected));
+        assertThat(List.of(testOut.toString()), is(List.of(expected)));
     }
 
     @Test
@@ -184,6 +188,7 @@ public class FunctionalTest {
         final String expected2 = "DEABCD";
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+
         assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
     }
 

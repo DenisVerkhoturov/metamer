@@ -1,11 +1,16 @@
 package metamer.fasta;
 
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import metamer.io.Parser;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import metamer.io.Parser;
+import static metamer.utils.Lists.head;
 
 public class Fasta implements Parser<Record> {
 
@@ -46,18 +51,28 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Record read(final List<String> lines) {
+    public Either<String, Record> read(final List<String> lines) {
+        if (lines.size() < 2) {
+            return Either.left("We need more than two lines");
+        }
+        if (lines.get(0).charAt(0) != '>') {
+            return Either.left("First string is not a indificator");
+        }
+        if (Option.none().equals(head(lines))) {
+            return Either.left("Empty list");
+        }
+
         String uniqI = lines.get(0).substring(1, lines.get(0).indexOf(' ') - 1);
         String addInf = lines.get(0).substring(lines.get(0).indexOf(' ') + 1);
         StringBuilder seq = new StringBuilder();
         for (int i = 1; i < lines.size(); i++) {
             seq.append(lines.get(i));
         }
-        return new Record(uniqI, addInf, seq.toString());
+        return Either.right(new Record(uniqI, addInf, seq.toString()));
     }
 
     @Override
-    public Stream<Record> read(final Stream<String> inpStream) {
+    public Either<String, Seq<Record>> read(final Stream<String> inpStream) {
         List<List<String>> list = new ArrayList<>();
         int counter = -1;
 
@@ -68,11 +83,15 @@ public class Fasta implements Parser<Record> {
             }
             list.get(counter).add(str);
         }
-        List<Record> out = new ArrayList<>();
+        List<Either<String, Record>> out = new ArrayList<>();
         for (final List<String> strings : list) {
             out.add(read(strings));
         }
-        return out.stream();
+
+        final Seq<Either<String, Record>> eithers = io.vavr.collection.List.ofAll(out);
+        final Either<String, Seq<Record>> results = Either.sequenceRight(eithers);
+
+        return results;
 
     }
 

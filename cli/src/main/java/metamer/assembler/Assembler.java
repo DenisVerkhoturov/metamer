@@ -38,5 +38,29 @@ public class Assembler {
         r.write(Stream.of(new Record("cycle", "from file: " + inputFile, cycle)));
         
     }
+
+    @Override
+    public boolean equals(final Object another) {
+        if (this == another) {
+            return true;
+        }
+        if (another == null || getClass() != another.getClass()) {
+            return false;
+        }
+
+        Assembler assembler = (Assembler) another;
+
+        if (!inputFile.equals(assembler.inputFile)) {
+            return false;
+        }
+        return outputFile.equals(assembler.outputFile);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = inputFile.hashCode();
+        result = 31 * result + outputFile.hashCode();
+        return result;
+    }
 }
 

@@ -1,12 +1,16 @@
 package metamer.fastq;
 
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import metamer.io.Parser;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import metamer.io.Parser;
-import metamer.utils.ParsingException;
+import static metamer.utils.Lists.head;
 
 public class FastQ implements Parser<Record> {
     final public static String FASTQ_EXTENSION = "fastq";
@@ -28,65 +32,71 @@ public class FastQ implements Parser<Record> {
     }
 
     @Override
-    public Stream<Record> read(final Stream<String> lines) {
+    public Either<String, Seq<Record>> read(final Stream<String> lines) {
         List<String> inpStrings = lines.collect(Collectors.toList());
-        List<Record> outList = new ArrayList<>();
+        List<Either<String, Record>> outList = new ArrayList<>();
 
         try {
             if (inpStrings.isEmpty() || inpStrings.size() % 4 != 0) {
-                throw new ParsingException("Incorrect number of input strings");
+                return Either.left("Incorrect number of input strings");
             }
             for (int i = 0; i < inpStrings.size(); i += 4) {
-                outList.add(formRecord(inpStrings.subList(i, i + 4)));
+                outList.add(read(inpStrings.subList(i, i + 4)));
             }
         } catch (final Exception e) {
             System.out.println(e.getMessage());
         }
 
-        return outList.stream();
+        final Seq<Either<String, Record>> eithers = io.vavr.collection.List.ofAll(outList);
+        final Either<String, Seq<Record>> results = Either.sequenceRight(eithers);
+
+        return results;
 
     }
 
     @Override
-    public Record read(final List<String> lines) {
-        return null;
+    public Either<String, Record> read(final List<String> lines) {
+        if (lines.size() < 2) {
+            return Either.left("We need more than two lines");
+        }
+        if (Option.none().equals(head(lines))) {
+            return Either.left("Empty list");
+        }
+
+        String tmpId;
+        String tmpDescription;
+
+        if (!lines.get(0).startsWith(IDENTIFIER_PREFIX)) {
+            return  Either.left("Incorrect ID line");
+        }
+        if (lines.get(0).contains(" ")) {
+            tmpId = lines.get(0).substring(1, lines.get(0).indexOf(" ", 0));
+            tmpDescription = lines.get(0).substring(lines.get(0).indexOf(" ", 0) + 1);
+        } else {
+            tmpId = lines.get(0).substring(1);
+            tmpDescription = "";
+        }
+
+        if (!lines.get(1).matches("[ACGTN]+")) {
+            return Either.left("Incorrect sequence line");
+        }
+
+        if (!lines.get(2).matches("\\+\\s*") && !lines.get(2).equals("+" + tmpId)) {
+            return Either.left("Invalid quality score ID");
+        }
+
+        if (lines.get(3).length() != lines.get(1).length()) {
+            return Either.left("Incorrect quality score line length");
+        }
+        if (!lines.get(3).matches("[\\!-\\~]+")) {
+            return Either.left("Quality score line contains incorrect symbols");
+        }
+
+        return Either.right(new Record(tmpId, tmpDescription, lines.get(1), lines.get(3).getBytes()));
     }
 
     public static FastQ parser() {
         return instance;
-    }
-
-    public static Record formRecord(final List<String> strings) throws ParsingException {
-        String tmpId;
-        String tmpDescription;
-
-        if (!strings.get(0).startsWith(IDENTIFIER_PREFIX)) {
-            throw new ParsingException("Incorrect ID line");
-        }
-        if (strings.get(0).contains(" ")) {
-            tmpId = strings.get(0).substring(1, strings.get(0).indexOf(" ", 0));
-            tmpDescription = strings.get(0).substring(strings.get(0).indexOf(" ", 0) + 1);
-        } else {
-            tmpId = strings.get(0).substring(1);
-            tmpDescription = "";
-        }
-
-        if (!strings.get(1).matches("[ACGTN]+")) {
-            throw new ParsingException("Incorrect sequence line");
-        }
-
-        if (!strings.get(2).matches("\\+\\s*") && !strings.get(2).equals("+" + tmpId)) {
-            throw new ParsingException("Invalid quality score ID");
-        }
-
-        if (strings.get(3).length() != strings.get(1).length()) {
-            throw new ParsingException("Incorrect quality score line length");
-        }
-        if (!strings.get(3).matches("[\\!-\\~]+")) {
-            throw new ParsingException("Quality score line contains incorrect symbols");
-        }
-
-        return new Record(tmpId, tmpDescription, strings.get(1), strings.get(3).getBytes());
     }
 
 }
