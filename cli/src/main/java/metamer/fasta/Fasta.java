@@ -1,17 +1,20 @@
 package metamer.fasta;
 
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+import io.vavr.control.Option;
+import metamer.io.Parser;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import metamer.io.Parser;
+import static metamer.utils.Lists.head;
 
 import static metamer.utils.Splitter.splitBefore;
 import static metamer.utils.Streams.chunks;
 
 public class Fasta implements Parser<Record> {
-
-    public static final String FASTA_EXTENSION = "fasta";
     private static final String IDENTIFIER_PREFIX = ">";
     private final int LINE_LENGTH = 80;
 
@@ -48,27 +51,39 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Record read(final List<String> lines) {
-        String uniqI;
-        String addInf;
-        if (lines.get(0).indexOf(' ') != -1) {
-            uniqI = lines.get(0).substring(1, lines.get(0).indexOf(' ') - 1);
-            addInf = lines.get(0).substring(lines.get(0).indexOf(' ') + 1);
+    public Either<String, Record> read(final List<String> lines) {
+        if (lines.size() < 2) {
+            return Either.left("We need more than two lines");
+        }
+        final String description = lines.get(0);
+        if (description.charAt(0) != '>') {
+            return Either.left("First string is not a indificator");
+        }
+        if (Option.none().equals(head(lines))) {
+            return Either.left("Empty list");
+        }
+
+        final String uniqI;
+        final String addInf;
+        if (description.contains(" ")) {
+            uniqI = description.substring(1, description.indexOf(' ') - 1);
+            addInf = description.substring(description.indexOf(' ') + 1);
         } else {
-            uniqI = lines.get(0);
+            uniqI = description.substring(1);
             addInf = "";
         }
-        StringBuilder seq = new StringBuilder();
+        final StringBuilder seq = new StringBuilder();
         for (int i = 1; i < lines.size(); i++) {
             seq.append(lines.get(i));
         }
-        return new Record(uniqI, addInf, seq.toString());
+        return Either.right(new Record(uniqI, addInf, seq.toString()));
     }
 
     @Override
-    public Stream<Record> read(final Stream<String> lines) {
+    public Either<String, Seq<Record>> read(final Stream<String> lines) {
         final Stream<List<String>> chunks = chunks(splitBefore(line -> line.startsWith(IDENTIFIER_PREFIX)), lines);
-        return chunks.map(this::read);
+        final Seq<Either<String, Record>> eithers = io.vavr.collection.List.ofAll(chunks.map(this::read));
+        return Either.sequenceRight(eithers);
     }
 
     public static Fasta parser() {

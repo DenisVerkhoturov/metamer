@@ -1,9 +1,11 @@
 package metamer.fastq;
 
+import metamer.io.HasSequence;
+
 import java.util.Arrays;
 import java.util.Objects;
 
-public class Record {
+public class Record implements HasSequence {
     public final String id;
     public final String description;
     public final String sequence;
@@ -14,6 +16,11 @@ public class Record {
         this.description = description;
         this.sequence = sequence;
         this.quality = quality;
+    }
+
+    @Override
+    public String sequence() {
+        return sequence;
     }
 
     @Override

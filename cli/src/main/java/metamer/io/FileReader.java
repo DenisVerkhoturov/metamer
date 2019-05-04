@@ -1,5 +1,9 @@
 package metamer.io;
 
+import io.vavr.Value;
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,12 +20,16 @@ public class FileReader<T> implements Reader {
     }
 
     public Stream<T> read() {
-        try {
-            final Stream<String> lines = Files.lines(path);
-            return this.parser().read(lines);
+        try (final Stream<String> lines = Files.lines(path)) {
+            final Either<String, Seq<T>> value = this.parser().read(lines);
+            return value.map(Value::toJavaStream).getOrElse(Stream.empty());
         } catch (final IOException e) {
             throw new RuntimeException("Can't parse :(");
         }
+    }
+
+    public Path path() {
+        return path;
     }
 
     public Parser<T> parser() {
@@ -31,5 +39,4 @@ public class FileReader<T> implements Reader {
     public String id() {
         return this.path.toString();
     }
-
 }

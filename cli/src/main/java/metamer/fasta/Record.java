@@ -1,8 +1,10 @@
 package metamer.fasta;
 
+import metamer.io.HasSequence;
+
 import java.util.Objects;
 
-public class Record {
+public class Record implements HasSequence {
     public final String uniqueIdentifier;
     public final String additionalInformation;
     public final String sequence;
@@ -15,6 +17,11 @@ public class Record {
 
     public Record(final String uniqueIdentifier, final String sequence) {
         this(uniqueIdentifier, "", sequence);
+    }
+
+    @Override
+    public String sequence() {
+        return sequence;
     }
 
     @Override

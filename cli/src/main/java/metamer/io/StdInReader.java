@@ -1,7 +1,10 @@
 package metamer.io;
 
+import io.vavr.Value;
+import io.vavr.collection.Seq;
+import io.vavr.control.Either;
+
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.stream.Stream;
 
@@ -15,10 +18,9 @@ public class StdInReader<T> implements Reader {
     }
 
     public Stream<T> read() {
-        try (final BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in))) {
-            return this.parser().read(stdin.lines());
-        } catch (final IOException e) {
-            throw new RuntimeException("Can't parse :(");
+        try (final Stream<String> lines = new BufferedReader(new InputStreamReader(System.in)).lines()) {
+            final Either<String, Seq<T>> value = this.parser().read(lines);
+            return value.map(Value::toJavaStream).getOrElse(Stream.empty());
         }
     }
 
