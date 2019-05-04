@@ -4,15 +4,16 @@ import metamer.cmdparser.CliHandler;
 import metamer.cmdparser.CliHandlerMessages;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,7 @@ import static org.hamcrest.io.FileMatchers.anExistingFile;
 
 public class FunctionalTest {
     private final static PrintStream standardOut = System.out;
+    private final static InputStream standardIn = System.in;
     private final OutputStream testOut = new ByteArrayOutputStream();
     private final String newLine = System.lineSeparator();
     private final String usage = multiline(
@@ -54,11 +56,13 @@ public class FunctionalTest {
     @BeforeEach
     public void setUpStream() {
         System.setOut(new PrintStream(testOut));
+        System.setIn(new ByteArrayInputStream(content.getBytes()));
     }
 
     @AfterEach
     public void restoreStream() {
         System.setOut(standardOut);
+        System.setIn(standardIn);
     }
 
     @Test
@@ -79,10 +83,8 @@ public class FunctionalTest {
 
     @Test
     @DisplayName("message should be shown when there is no key -f")
-    public void noFormatTest() throws IOException {
-        final Path inputPath = temporaryFile("inp", ".fasta");
-        final Path outputPath = temporaryPath("out", ".fasta");
-        CliHandler.main("-k", "3", "-i", inputPath.toString(), "-o", outputPath.toString());
+    public void noFormatTest() {
+        CliHandler.main("-k", "3");
         assertThat(testOut.toString(), is(CliHandlerMessages.NO_FORMAT + newLine));
     }
 
@@ -192,41 +194,41 @@ public class FunctionalTest {
         assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
     }
 
-    @Disabled("Writing to stdout is not implemented yet")
     @Test
     @DisplayName("stdout should contain expected string when there is no output file")
     public void writeInStdoutTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         Files.write(inputPath, content.getBytes());
 
-        final String expected1 = ">cycle from file: " + inputPath.toString();
-        final String expected2 = "ABCDE";
+        final String expected1 = ">FIX ME";
+        final String expected2 = "DEABCD";
 
         CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString());
         assertThat(testOut.toString(), containsString(expected1));
         assertThat(testOut.toString(), containsString(expected2));
     }
 
-    @Disabled("Reading from stdin is not implemented yet")
     @Test
     @DisplayName("stdin should be a source of information when there is no input file")
     public void readingFromStdinTest() throws IOException {
         final Path outputPath = temporaryPath("out", ".fasta");
 
-        final String expected = ">cycle from file: " + System.in.toString();
+        final String expected1 = ">FIX ME";
+        final String expected2 = "DEABCD";
 
         CliHandler.main("-k", "3", "-format", "fasta", "-o", outputPath.toString());
         assertThat(outputPath.toFile(), anExistingFile());
-        assertThat(Files.lines(outputPath).collect(toList()), contains(expected));
+        assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
     }
 
-    @Disabled("Reading from stdin and writing to stdout are not implemented yet")
     @Test
     @DisplayName("stdin should be source & stdout should contain result when there is no input & output files")
     public void readingFromStdinWriteInStdoutTest() {
-        final String expected = ">cycle from file: " + System.in.toString();
+        final String expected1 = ">FIX ME";
+        final String expected2 = "DEABCD";
 
         CliHandler.main("-k", "3", "-format", "fasta");
-        assertThat(testOut.toString(), containsString(expected));
+        assertThat(testOut.toString(), containsString(expected1));
+        assertThat(testOut.toString(), containsString(expected2));
     }
 }
