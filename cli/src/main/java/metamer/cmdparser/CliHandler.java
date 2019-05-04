@@ -161,36 +161,14 @@ public class CliHandler {
         switch (format) {
             case FASTA: {
                 //Assembler constructors for fasta
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
-                    assembler = new Assembler(inputPath, outputPath, k);
-                    assembler.assemble();
-                }
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.FILE) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
+                assembler = new Assembler(inputPath, outputPath, k);
+                assembler.assemble();
                 break;
             }
             case FASTQ: {
                 //Assembler constructors for fastq and certain i format and o format
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
-                    assembler = new Assembler(inputPath, outputPath, k);
-                    assembler.assemble();
-                }
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.FILE) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
+                assembler = new Assembler(inputPath, outputPath, k);
+                assembler.assemble(); //constructor + method assemble
                 break;
             }
         }
