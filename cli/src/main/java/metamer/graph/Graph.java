@@ -1,6 +1,6 @@
 package metamer.graph;
 
-import metamer.utils.GraphUtils;
+import metamer.utils.Strings;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +31,7 @@ public class Graph {
     }
 
     public void makeNodes(final String str) {
-        GraphUtils.slidingWindow(str, k).forEach(this::createNodesMap);
+        Strings.windows(str, k).forEach(this::createNodesMap);
     }
 
     public Stream<Map.Entry<String, Node>> getNodesAsCollection() {

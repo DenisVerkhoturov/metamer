@@ -10,12 +10,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 
-class GraphUtilsTest {
+class StringsTest {
     @Test
     @DisplayName("list should contain all possible windows when finish sliding")
     public void testSlidingWindow() {
         final String s = "BELLE";
-        List<String> list = GraphUtils.slidingWindow(s, 3)
+        List<String> list = Strings.windows(s, 3)
                 .collect(Collectors.toList());
         assertThat(list, contains("BEL", "ELL", "LLE"));
     }
@@ -24,7 +24,7 @@ class GraphUtilsTest {
     @DisplayName("list should be empty if window size is bigger than string")
     public void testIfStrIsShorterThanKmer() {
         final String s = "RAT";
-        List<String> list = GraphUtils.slidingWindow(s, 5)
+        List<String> list = Strings.windows(s, 5)
                 .collect(Collectors.toList());
         assertThat(list, empty());
     }

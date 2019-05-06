@@ -1,7 +1,6 @@
 package metamer.io;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.stream.Stream;
@@ -24,8 +23,8 @@ public class FileReader<T> implements Reader {
     }
 
     public Stream<T> read() {
-        try (final Stream<String> lines = Files.lines(path)) {
-            return this.parser().read(lines);
+        try {
+            return this.parser().read(path);
         } catch (final IOException e) {
             throw new RuntimeException("Can't parse :(");
         }
