@@ -2,10 +2,12 @@ package metamer.fasta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import metamer.io.Parser;
+
+import static metamer.utils.Splitter.splitBefore;
+import static metamer.utils.Streams.chunks;
 
 public class Fasta implements Parser<Record> {
 
@@ -47,8 +49,15 @@ public class Fasta implements Parser<Record> {
 
     @Override
     public Record read(final List<String> lines) {
-        String uniqI = lines.get(0).substring(1, lines.get(0).indexOf(' ') - 1);
-        String addInf = lines.get(0).substring(lines.get(0).indexOf(' ') + 1);
+        String uniqI;
+        String addInf;
+        if (lines.get(0).indexOf(' ') != -1) {
+            uniqI = lines.get(0).substring(1, lines.get(0).indexOf(' ') - 1);
+            addInf = lines.get(0).substring(lines.get(0).indexOf(' ') + 1);
+        } else {
+            uniqI = lines.get(0);
+            addInf = "";
+        }
         StringBuilder seq = new StringBuilder();
         for (int i = 1; i < lines.size(); i++) {
             seq.append(lines.get(i));
@@ -57,23 +66,9 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Stream<Record> read(final Stream<String> inpStream) {
-        List<List<String>> list = new ArrayList<>();
-        int counter = -1;
-
-        for (final String str : inpStream.collect(Collectors.toList())) {
-            if (str.startsWith(IDENTIFIER_PREFIX)) {
-                list.add(new ArrayList<>());
-                counter++;
-            }
-            list.get(counter).add(str);
-        }
-        List<Record> out = new ArrayList<>();
-        for (final List<String> strings : list) {
-            out.add(read(strings));
-        }
-        return out.stream();
-
+    public Stream<Record> read(final Stream<String> lines) {
+        final Stream<List<String>> chunks = chunks(splitBefore(line -> line.startsWith(IDENTIFIER_PREFIX)), lines);
+        return chunks.map(this::read);
     }
 
     public static Fasta parser() {

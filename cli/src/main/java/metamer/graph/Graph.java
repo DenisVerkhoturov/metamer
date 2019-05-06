@@ -1,7 +1,5 @@
 package metamer.graph;
 
-import metamer.utils.GraphUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,6 +10,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static metamer.utils.Strings.windows;
 
 public class Graph {
 
@@ -31,11 +30,7 @@ public class Graph {
     }
 
     public void makeNodes(final String str) {
-        GraphUtils.slidingWindow(str, k).forEach(this::createNodesMap);
-    }
-
-    public Stream<Map.Entry<String, Node>> getNodesAsCollection() {
-        return this.nodes.entrySet().stream();
+        windows(str, k).forEach(this::createNodesMap);
     }
 
     public Map<String, Node> getNodes() {
@@ -123,7 +118,7 @@ public class Graph {
             nodes.get(right.kmer).nin++;
             neighbors.merge(nodes.get(left.kmer), new ArrayList<>(Arrays.asList(nodes.get(right.kmer))),
                     (o, n) -> Stream.concat(o.stream(), n.stream()).collect(toList()));
-            neighbors.merge(nodes.get(right.kmer), new ArrayList<Node>(),
+            neighbors.merge(nodes.get(right.kmer), new ArrayList<>(),
                     (o, n) -> Stream.concat(o.stream(), n.stream()).collect(toList()));
         }
         return new Graph(neighbors, nodes, k);

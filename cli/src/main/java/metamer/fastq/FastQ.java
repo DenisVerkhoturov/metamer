@@ -1,12 +1,13 @@
 package metamer.fastq;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import metamer.io.Parser;
 import metamer.utils.ParsingException;
+
+import static metamer.utils.Splitter.splitBefore;
+import static metamer.utils.Streams.chunks;
 
 public class FastQ implements Parser<Record> {
     final public static String FASTQ_EXTENSION = "fastq";
@@ -29,22 +30,8 @@ public class FastQ implements Parser<Record> {
 
     @Override
     public Stream<Record> read(final Stream<String> lines) {
-        List<String> inpStrings = lines.collect(Collectors.toList());
-        List<Record> outList = new ArrayList<>();
-
-        try {
-            if (inpStrings.isEmpty() || inpStrings.size() % 4 != 0) {
-                throw new ParsingException("Incorrect number of input strings");
-            }
-            for (int i = 0; i < inpStrings.size(); i += 4) {
-                outList.add(formRecord(inpStrings.subList(i, i + 4)));
-            }
-        } catch (final Exception e) {
-            System.out.println(e.getMessage());
-        }
-
-        return outList.stream();
-
+        final Stream<List<String>> chunks = chunks(splitBefore(line -> line.startsWith(IDENTIFIER_PREFIX)), lines);
+        return chunks.map(this::formRecord);
     }
 
     @Override
@@ -56,7 +43,7 @@ public class FastQ implements Parser<Record> {
         return instance;
     }
 
-    public static Record formRecord(final List<String> strings) throws ParsingException {
+    public Record formRecord(final List<String> strings) throws ParsingException {
         String tmpId;
         String tmpDescription;
 
@@ -88,6 +75,4 @@ public class FastQ implements Parser<Record> {
 
         return new Record(tmpId, tmpDescription, strings.get(1), strings.get(3).getBytes());
     }
-
 }
-

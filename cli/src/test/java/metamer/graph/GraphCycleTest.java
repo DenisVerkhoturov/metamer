@@ -11,7 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.oneOf;
 import static org.hamcrest.Matchers.hasValue;
 
 public class GraphCycleTest {
@@ -71,6 +71,6 @@ public class GraphCycleTest {
         graph.createFromStream(Stream.of("ABCDEA"));
         graph = graph.optimizeGraph();
         GraphCycle graphCycle = new GraphCycle(graph, 3);
-        assertThat(graphCycle.findCycle(), isOneOf("ABCDEA", "BCDEAB", "CDEABC", "DEABCD", "EABCDE"));
+        assertThat(graphCycle.findCycle(), is(oneOf("ABCDEA", "BCDEAB", "CDEABC", "DEABCD", "EABCDE")));
     }
 }
