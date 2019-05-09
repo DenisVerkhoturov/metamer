@@ -10,14 +10,6 @@ public class FileWriter<T> implements Writer<T> {
     private Path path;
     private Parser<T> parser;
 
-    public Parser<T> parser() {
-        return this.parser;
-    }
-
-    public Path path() {
-        return this.path;
-    }
-
     public FileWriter(final Path path, final Parser<T> parser) {
         this.path = path;
         this.parser = parser;
@@ -51,7 +43,14 @@ public class FileWriter<T> implements Writer<T> {
         } catch (final IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public Parser<T> parser() {
+        return this.parser;
+    }
+
+    public String id() {
+        return this.path.toString();
     }
 
 }
