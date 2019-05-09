@@ -15,20 +15,20 @@ public class FileReader<T> implements Reader {
         this.parser = parser;
     }
 
-    public Path path() {
-        return this.path;
-    }
-
-    public Parser<T> parser() {
-        return this.parser;
-    }
-
     public Stream<T> read() {
         try (final Stream<String> lines = Files.lines(path)) {
             return this.parser().read(lines);
         } catch (final IOException e) {
             throw new RuntimeException("Can't parse :(");
         }
+    }
+
+    public Parser<T> parser() {
+        return this.parser;
+    }
+
+    public String id() {
+        return this.path.toString();
     }
 
 }

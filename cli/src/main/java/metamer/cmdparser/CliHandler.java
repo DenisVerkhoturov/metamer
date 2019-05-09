@@ -1,6 +1,15 @@
 package metamer.cmdparser;
 
 import metamer.assembler.Assembler;
+import metamer.fasta.Fasta;
+import metamer.fastq.FastQ;
+import metamer.io.Parser;
+import metamer.io.Writer;
+import metamer.io.FileWriter;
+import metamer.io.StdOutWriter;
+import metamer.io.Reader;
+import metamer.io.FileReader;
+import metamer.io.StdInReader;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.CommandLineParser;
@@ -157,43 +166,26 @@ public class CliHandler {
             }
         }
 
-        Assembler assembler;
-        switch (format) {
-            case FASTA: {
-                //Assembler constructors for fasta
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
-                    assembler = new Assembler(inputPath, outputPath, k);
-                    assembler.assemble();
-                }
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.FILE) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
-                break;
-            }
-            case FASTQ: {
-                //Assembler constructors for fastq and certain i format and o format
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.FILE) {
-                    assembler = new Assembler(inputPath, outputPath, k);
-                    assembler.assemble();
-                }
-                if (iFormat == IOFormat.FILE && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.FILE) {
-                    //constructor + method assemble
-                }
-                if (iFormat == IOFormat.STDIN && oFormat == IOFormat.STDOUT) {
-                    //constructor + method assemble
-                }
-                break;
-            }
+        Parser fileParser;
+        if (format == Format.FASTA) {
+            fileParser = Fasta.parser();
+        } else {
+            fileParser = FastQ.parser();
         }
+        Reader reader;
+        if (iFormat == IOFormat.FILE) {
+            reader = new FileReader(inputPath, fileParser);
+        } else {
+            reader = new StdInReader(fileParser);
+        }
+        Writer writer;
+        if (oFormat == IOFormat.FILE) {
+            writer = new FileWriter(outputPath, fileParser);
+        } else {
+            writer = new StdOutWriter(fileParser);
+        }
+        Assembler assembler = new Assembler(reader, writer, k);
+        assembler.assemble();
     }
 
     public static void main(final String... args) {
