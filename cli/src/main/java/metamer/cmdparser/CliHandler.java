@@ -9,7 +9,13 @@ import metamer.assembler.Assembler;
 import metamer.fasta.Fasta;
 import metamer.fasta.Record;
 import metamer.fastq.FastQ;
-import metamer.io.*;
+import metamer.io.FileReader;
+import metamer.io.FileWriter;
+import metamer.io.HasSequence;
+import metamer.io.Parser;
+import metamer.io.StdInReader;
+import metamer.io.StdOutWriter;
+import metamer.io.Writer;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.CommandLineParser;
@@ -189,7 +195,7 @@ public class CliHandler {
 
         public final Parser<? extends HasSequence> parser;
 
-        Format(Parser<? extends HasSequence> parser) {
+        Format(final Parser<? extends HasSequence> parser) {
             this.parser = parser;
         }
     }
