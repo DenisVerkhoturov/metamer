@@ -76,21 +76,21 @@ public class CliHandler {
         final String format = line.getOptionValue("format");
         final Validation<Seq<String>, Assembler> validation;
         if (line.hasOption("input") && line.hasOption("output")) {
-            validation = validate(
+            validation = validateFromFileToFile(
                     new Input(line.getOptionValue("input")), new Output(line.getOptionValue("output")), k, format
             );
         } else if (line.hasOption("input")) {
-            validation = validate(new Input(line.getOptionValue("input")), k, format);
+            validation = validateFromFileToStd(new Input(line.getOptionValue("input")), k, format);
         } else if (line.hasOption("output")) {
-            validation = validate(new Output(line.getOptionValue("output")), k, format);
+            validation = validateFromStdToFile(new Output(line.getOptionValue("output")), k, format);
         } else {
-            validation = validate(k, format);
+            validation = validateFromStdToStd(k, format);
         }
 
         return validation.toEither();
     }
 
-    public static Validation<Seq<String>, Assembler> validate(
+    public static Validation<Seq<String>, Assembler> validateFromFileToFile(
             final Input input,
             final Output output,
             final String kValue,
@@ -107,7 +107,7 @@ public class CliHandler {
         });
     }
 
-    public static Validation<Seq<String>, Assembler> validate(
+    public static Validation<Seq<String>, Assembler> validateFromFileToStd(
             final Input input,
             final String kValue,
             final String formatValue) {
@@ -122,7 +122,7 @@ public class CliHandler {
         });
     }
 
-    public static Validation<Seq<String>, Assembler> validate(
+    public static Validation<Seq<String>, Assembler> validateFromStdToFile(
             final Output output,
             final String kValue,
             final String formatValue) {
@@ -137,7 +137,9 @@ public class CliHandler {
         });
     }
 
-    public static Validation<Seq<String>, Assembler> validate(final String kValue, final String formatValue) {
+    public static Validation<Seq<String>, Assembler> validateFromStdToStd(
+            final String kValue,
+            final String formatValue) {
         return combine(validateK(kValue), validateFormat(formatValue)).ap((k, format) -> {
             final Stream<String> reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
             final Writer<Record> writer = new StdOutWriter<>(Fasta.parser());
