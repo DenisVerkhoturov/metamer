@@ -77,12 +77,12 @@ public class CliHandler {
         final Validation<Seq<String>, Assembler> validation;
         if (line.hasOption("input") && line.hasOption("output")) {
             validation = validateFromFileToFile(
-                    new Input(line.getOptionValue("input")), new Output(line.getOptionValue("output")), k, format
+                    line.getOptionValue("input"), line.getOptionValue("output"), k, format
             );
         } else if (line.hasOption("input")) {
-            validation = validateFromFileToStd(new Input(line.getOptionValue("input")), k, format);
+            validation = validateFromFileToStd(line.getOptionValue("input"), k, format);
         } else if (line.hasOption("output")) {
-            validation = validateFromStdToFile(new Output(line.getOptionValue("output")), k, format);
+            validation = validateFromStdToFile(line.getOptionValue("output"), k, format);
         } else {
             validation = validateFromStdToStd(k, format);
         }
@@ -91,13 +91,13 @@ public class CliHandler {
     }
 
     public static Validation<Seq<String>, Assembler> validateFromFileToFile(
-            final Input input,
-            final Output output,
+            final String input,
+            final String output,
             final String kValue,
             final String formatValue) {
         return combine(
-                validateInputPath(input.path),
-                validateOutputPath(output.path),
+                validateInputPath(input),
+                validateOutputPath(output),
                 validateK(kValue),
                 validateFormat(formatValue)
         ).ap((source, target, k, format) -> {
@@ -108,11 +108,11 @@ public class CliHandler {
     }
 
     public static Validation<Seq<String>, Assembler> validateFromFileToStd(
-            final Input input,
+            final String input,
             final String kValue,
             final String formatValue) {
         return combine(
-                validateInputPath(input.path),
+                validateInputPath(input),
                 validateK(kValue),
                 validateFormat(formatValue)
         ).ap((source, k, format) -> {
@@ -123,11 +123,11 @@ public class CliHandler {
     }
 
     public static Validation<Seq<String>, Assembler> validateFromStdToFile(
-            final Output output,
+            final String output,
             final String kValue,
             final String formatValue) {
         return combine(
-                validateOutputPath(output.path),
+                validateOutputPath(output),
                 validateK(kValue),
                 validateFormat(formatValue)
         ).ap((target, k, format) -> {
@@ -199,22 +199,6 @@ public class CliHandler {
 
         Format(final Parser<? extends HasSequence> parser) {
             this.parser = parser;
-        }
-    }
-
-    static class Input {
-        public final String path;
-
-        Input(final String path) {
-            this.path = path;
-        }
-    }
-
-    static class Output {
-        public final String path;
-
-        Output(final String path) {
-            this.path = path;
         }
     }
 }
