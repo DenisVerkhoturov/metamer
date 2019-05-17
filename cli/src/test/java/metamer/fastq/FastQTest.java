@@ -15,7 +15,7 @@ public class FastQTest {
     @Test
     @DisplayName("records should contain correct information when file was read")
     void testReadRecordsFromFile() {
-        final Either<String, Seq<Record>> records = FastQ.parser().read(Stream.of(
+        final Either<Exception, Seq<Record>> records = FastQ.parser().read(Stream.of(
                 "@MyCoolID some description",
                 "ACTGGTCA",
                 "+",

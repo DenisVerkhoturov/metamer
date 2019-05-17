@@ -9,6 +9,6 @@ import java.util.stream.Stream;
 public interface Parser<T> {
     Stream<String> show(T record);
     Stream<String> show(Stream<T> records);
-    Either<String, T> read(List<String> lines);
-    Either<String, Seq<T>> read(Stream<String> lines);
+    Either<Exception, T> read(List<String> lines);
+    Either<Exception, Seq<T>> read(Stream<String> lines);
 }

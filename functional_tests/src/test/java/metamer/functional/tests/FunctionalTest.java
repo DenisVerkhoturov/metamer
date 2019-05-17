@@ -1,7 +1,6 @@
 package metamer.functional.tests;
 
-import metamer.cmdparser.CliHandler;
-import metamer.cmdparser.CliHandlerMessages;
+import org.apache.commons.cli.ParseException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,12 +15,25 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclEntryType;
 import java.nio.file.attribute.AclEntryPermission;
 import java.nio.file.attribute.UserPrincipal;
-import java.util.List;
+
+import io.vavr.collection.Seq;
+import io.vavr.collection.List;
+import io.vavr.control.Either;
+
+import metamer.cmdparser.CliHandler;
+import metamer.cmdparser.exception.PathIsDirectory;
+import metamer.cmdparser.exception.NonexistentFile;
+import metamer.cmdparser.exception.NoLength;
+import metamer.cmdparser.exception.NoFormat;
+import metamer.cmdparser.exception.FileIsNotWritable;
+import metamer.cmdparser.exception.FileIsNotReadable;
+import metamer.cmdparser.exception.FileAlreadyExists;
 
 import static java.util.stream.Collectors.toList;
 import static metamer.functional.tests.Utils.temporaryDirectory;
@@ -71,7 +83,7 @@ public class FunctionalTest {
                             .setPermissions(AclEntryPermission.READ_DATA, AclEntryPermission.ADD_FILE)
                             .build();
 
-            final List<AclEntry> acl = view.getAcl();
+            final java.util.List<AclEntry> acl = view.getAcl();
             acl.add(0, denyReadAndWrite);
             view.setAcl(acl);
         } else {
@@ -102,18 +114,22 @@ public class FunctionalTest {
 
     @Test
     @DisplayName("message should be shown when there is no key -k")
-    public void noLengthTest() throws IOException {
+    public void noLengthTest() throws IOException, ParseException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryPath("out", ".fasta");
-        CliHandler.main("-f", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(testOut.toString(), is(CliHandlerMessages.NO_LENGTH + newLine));
+        final String[] args = new String[] {"-f", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString()};
+
+        final Seq<Exception> expectedSeq = List.of(new NoLength());
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
     }
 
     @Test
     @DisplayName("message should be shown when there is no key -f")
-    public void noFormatTest() {
-        CliHandler.main("-k", "3");
-        assertThat(testOut.toString(), is(CliHandlerMessages.NO_FORMAT + newLine));
+    public void noFormatTest() throws ParseException {
+        final String[] args = new String[] {"-k", "3"};
+
+        final Seq<Exception> expectedSeq = List.of(new NoFormat());
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
     }
 
     @Test
@@ -132,75 +148,94 @@ public class FunctionalTest {
 
     @Test
     @DisplayName("input path should be invalid if it is a directory")
-    void inputPathShouldBeInvalidIfItIsADirectory() throws IOException {
+    void inputPathShouldBeInvalidIfItIsADirectory() throws IOException, ParseException {
         final Path inputPath = temporaryDirectory("inp");
         final Path outputPath = temporaryPath("out", ".fasta");
+        final String[] args = new String[] {"-k", "3", "-format", "fasta", "-i",
+                inputPath.toString(), "-o", outputPath.toString()};
 
-        final String expected = inputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY + newLine;
+        final Seq<Exception> expectedSeq = List.of(new PathIsDirectory(inputPath));
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(List.of(testOut.toString()), is(List.of(expected)));
+        final PathIsDirectory ex = (PathIsDirectory) expectedSeq.get(0);
+        assertThat(ex.path(), is(inputPath));
     }
 
     @Test
     @DisplayName("output path should be invalid if it is a directory")
-    public void directoryAsOutputFileTest() throws IOException {
+    public void directoryAsOutputFileTest() throws IOException, ParseException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryDirectory("out");
+        final String[] args = new String[] {"-k", "3", "-format", "fasta", "-i",
+                inputPath.toString(), "-o", outputPath.toString()};
 
-        final String expected = outputPath.toString() + CliHandlerMessages.PATH_IS_DIRECTORY + newLine;
+        final Seq<Exception> expectedSeq = List.of(new PathIsDirectory(outputPath));
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(List.of(testOut.toString()), is(List.of(expected)));
+        final PathIsDirectory ex = (PathIsDirectory) expectedSeq.get(0);
+        assertThat(ex.path(), is(outputPath));
     }
 
     @Test
     @DisplayName("message should be shown when input file is not readable")
-    public void notReadableInputFileTest() throws IOException {
+    public void notReadableInputFileTest() throws IOException, ParseException {
         final Path inputPath = inaccessible(temporaryFile("inaccessible", ".fasta"));
         final Path outputPath = temporaryPath("out", ".fasta");
+        final String[] args = new String[] {"-k", "3", "-format", "fasta", "-i",
+                inputPath.toString(), "-o", outputPath.toString()};
 
-        final String expected = inputPath.toString() + CliHandlerMessages.FILE_IS_NOT_READABLE + newLine;
+        final Seq<Exception> expectedSeq = List.of(new FileIsNotReadable(inputPath));
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(List.of(testOut.toString()), is(List.of(expected)));
+        final FileIsNotReadable ex = (FileIsNotReadable) expectedSeq.get(0);
+        assertThat(ex.path(), is(inputPath));
     }
 
     @Test
     @DisplayName("message should be shown when output file is not writable")
-    public void notWritableOutputFileTest() throws IOException {
+    public void notWritableOutputFileTest() throws IOException, ParseException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path inaccessibleDirectory = inaccessible(temporaryDirectory("inaccessible"));
         final Path outputPath = inaccessibleDirectory.resolve("out.fasta");
+        final String[] args = new String[] {"-k", "3", "-format", "fasta", "-i",
+                inputPath.toString(), "-o", outputPath.toString()};
 
-        final String expected = outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE + newLine;
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(List.of(testOut.toString()), is(List.of(expected)));
+        final Seq<Exception> expectedSeq = List.of(new FileIsNotWritable(outputPath));
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
+
+        final FileIsNotWritable ex = (FileIsNotWritable) expectedSeq.get(0);
+        assertThat(ex.path(), is(outputPath));
     }
 
     @Test
     @DisplayName("input path should be invalid if it doesn't exist")
-    public void inputFileDoesNotExistTest() {
+    public void inputFileDoesNotExistTest() throws ParseException {
         final Path nonexistentPath = Paths.get("SomeNonexistentInputFile.fasta");
         final Path outputPath = temporaryPath("out", ".fasta");
+        final String[] args = new String[] {"-k", "3", "-format", "fasta", "-i",
+                nonexistentPath.toString(), "-o", outputPath.toString()};
 
-        final String expected = nonexistentPath.toString() + CliHandlerMessages.FILE_DOES_NOT_EXIST + newLine;
+        final Seq<Exception> expectedSeq = List.of(new NonexistentFile(nonexistentPath));
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", nonexistentPath.toString(), "-o", outputPath.toString());
-        assertThat(List.of(testOut.toString()), is(List.of(expected)));
+        final NonexistentFile ex = (NonexistentFile) expectedSeq.get(0);
+        assertThat(ex.path(), is(nonexistentPath));
     }
 
     @Test
     @DisplayName("message should be shown when output file already exists")
-    public void outputFileAlreadyExistTest() throws IOException {
+    public void outputFileAlreadyExistTest() throws IOException, ParseException {
         final Path inputPath = temporaryFile("inp", ".fasta");
         final Path outputPath = temporaryFile("out", ".fasta");
+        final String[] args = new String[] {"-k", "3", "-format", "fasta", "-i",
+                inputPath.toString(), "-o", outputPath.toString()};
 
-        final String expected = outputPath.toString() + CliHandlerMessages.FILE_ALREADY_EXIST + newLine;
+        final Seq<Exception> expectedSeq = List.of(new FileAlreadyExists(outputPath));
+        assertThat(CliHandler.parse(args), is(Either.left(expectedSeq)));
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(List.of(testOut.toString()), is(List.of(expected)));
+        final FileAlreadyExists ex = (FileAlreadyExists) expectedSeq.get(0);
+        assertThat(ex.path(), is(outputPath));
     }
 
     @Test

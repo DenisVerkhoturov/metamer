@@ -3,6 +3,13 @@ package metamer.fastq;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
+import metamer.fasta.exception.EmptyList;
+import metamer.fasta.exception.InvalidIdentifier;
+import metamer.fasta.exception.InvalidNumberOfLines;
+import metamer.fastq.exception.InvalidQualityScoreID;
+import metamer.fastq.exception.InvalidQualityScoreLine;
+import metamer.fastq.exception.InvalidQualityScoreLineLength;
+import metamer.fastq.exception.InvalidSequenceLine;
 import metamer.io.Parser;
 
 import java.util.List;
@@ -32,26 +39,26 @@ public class FastQ implements Parser<Record> {
     }
 
     @Override
-    public Either<String, Seq<Record>> read(final Stream<String> lines) {
+    public Either<Exception, Seq<Record>> read(final Stream<String> lines) {
         final Stream<List<String>> chunks = chunks(splitBefore(line -> line.startsWith(IDENTIFIER_PREFIX)), lines);
-        final Seq<Either<String, Record>> eithers = io.vavr.collection.List.ofAll(chunks.map(this::read));
+        final Seq<Either<Exception, Record>> eithers = io.vavr.collection.List.ofAll(chunks.map(this::read));
         return Either.sequenceRight(eithers);
 
     }
 
     @Override
-    public Either<String, Record> read(final List<String> lines) {
+    public Either<Exception, Record> read(final List<String> lines) {
         if (lines.size() < 2) {
-            return Either.left("We need more than two lines");
+            return Either.left(new InvalidNumberOfLines(lines.size()));
         }
         if (Option.none().equals(head(lines))) {
-            return Either.left("Empty list");
+            return Either.left(new EmptyList());
         }
         String tmpId;
         String tmpDescription;
 
         if (!lines.get(0).startsWith(IDENTIFIER_PREFIX)) {
-            return  Either.left("Incorrect ID line");
+            return  Either.left(new InvalidIdentifier(lines.get(0).charAt(0)));
         }
         if (lines.get(0).contains(" ")) {
             tmpId = lines.get(0).substring(1, lines.get(0).indexOf(" "));
@@ -62,18 +69,18 @@ public class FastQ implements Parser<Record> {
         }
 
         if (!lines.get(1).matches("[ACGTN]+")) {
-            return Either.left("Incorrect sequence line");
+            return Either.left(new InvalidSequenceLine(lines.get(1)));
         }
 
         if (!lines.get(2).matches("\\+\\s*") && !lines.get(2).equals("+" + tmpId)) {
-            return Either.left("Invalid quality score ID");
+            return Either.left(new InvalidQualityScoreID(lines.get(2)));
         }
 
         if (lines.get(3).length() != lines.get(1).length()) {
-            return Either.left("Incorrect quality score line length");
+            return Either.left(new InvalidQualityScoreLineLength(lines.get(3).length()));
         }
         if (!lines.get(3).matches("[\\!-\\~]+")) {
-            return Either.left("Quality score line contains incorrect symbols");
+            return Either.left(new InvalidQualityScoreLine(lines.get(3)));
         }
 
         return Either.right(new Record(tmpId, tmpDescription, lines.get(1), lines.get(3).getBytes()));
