@@ -5,6 +5,14 @@ import org.apache.commons.cli.ParseException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import metamer.cmdparser.exception.PathIsDirectory;
+import metamer.cmdparser.exception.NonexistentFile;
+import metamer.cmdparser.exception.InvalidFormat;
+import metamer.cmdparser.exception.FileIsNotWritable;
+import metamer.cmdparser.exception.FileIsNotReadable;
+import metamer.cmdparser.exception.FileAlreadyExists;
+import metamer.cmdparser.exception.InvalidLength;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +22,7 @@ import java.nio.file.attribute.AclEntryType;
 import java.nio.file.attribute.AclEntryPermission;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
+import java.nio.file.Paths;
 
 import static io.vavr.control.Validation.invalid;
 import static metamer.utils.CliHandlerUtils.temporaryDirectory;
@@ -91,56 +100,56 @@ class CliHandlerTest {
     @Test
     @DisplayName("number format exception should be thrown when key's -k argument is not integer")
     public void invalidLengthTest() {
-        final Validation<String, Integer> verdict = CliHandler.validateK("abc");
-        assertThat(verdict, is(invalid(CliHandlerMessages.INVALID_LENGTH)));
+        final Validation<Exception, Integer> verdict = CliHandler.validateK("abc");
+        assertThat(verdict, is(invalid(new InvalidLength("abc"))));
     }
 
     @Test
     @DisplayName("message should be shown when key's -f argument is not fasta or fastq")
     public void invalidFormatTest() {
-        final Validation<String, CliHandler.Format> verdict = CliHandler.validateFormat("fast");
-        assertThat(verdict, is(invalid(CliHandlerMessages.INVALID_FORMAT)));
+        final Validation<Exception, CliHandler.Format> verdict = CliHandler.validateFormat("fast");
+        assertThat(verdict, is(invalid(new InvalidFormat("fast"))));
     }
 
     @Test
     @DisplayName("input path should be invalid if it is a directory")
     void inputPathShouldBeInvalidIfItIsADirectory() throws IOException {
         final String path = temporaryDirectory("inp").toString();
-        final Validation<String, Path> verdict = CliHandler.validateInputPath(path);
-        assertThat(verdict, is(invalid(path + CliHandlerMessages.PATH_IS_DIRECTORY)));
+        final Validation<Exception, Path> verdict = CliHandler.validateInputPath(path);
+        assertThat(verdict, is(invalid(new PathIsDirectory(Paths.get(path)))));
     }
 
     @Test
     @DisplayName("output path should be invalid if it is a directory")
     public void directoryAsOutputFileTest() throws IOException {
         final String outputPath = temporaryDirectory("out").toString();
-        final Validation<String, Path> verdict = CliHandler.validateOutputPath(outputPath);
-        assertThat(verdict, is(invalid(outputPath + CliHandlerMessages.PATH_IS_DIRECTORY)));
+        final Validation<Exception, Path> verdict = CliHandler.validateOutputPath(outputPath);
+        assertThat(verdict, is(invalid(new PathIsDirectory(Paths.get(outputPath)))));
     }
 
     @Test
     @DisplayName("message should be shown when input file is not readable")
     public void notReadableInputFileTest() throws IOException {
         final String inputPath = inaccessible(temporaryFile("inaccessible", ".fasta")).toString();
-        final Validation<String, Path> verdict = CliHandler.validateInputPath(inputPath);
-        assertThat(verdict, is(invalid(inputPath + CliHandlerMessages.FILE_IS_NOT_READABLE)));
+        final Validation<Exception, Path> verdict = CliHandler.validateInputPath(inputPath);
+        assertThat(verdict, is(invalid(new FileIsNotReadable(Paths.get(inputPath)))));
     }
 
     @Test
     @DisplayName("input path should be invalid if it doesn't exist")
     public void inputFileDoesNotExistTest() {
         final String nonexistentPath = "SomeNonexistentInputFile.fasta";
-        final Validation<String, Path> verdict = CliHandler.validateInputPath(nonexistentPath);
+        final Validation<Exception, Path> verdict = CliHandler.validateInputPath(nonexistentPath);
         assertThat(verdict,
-                is(invalid(nonexistentPath + CliHandlerMessages.FILE_DOES_NOT_EXIST)));
+                is(invalid(new NonexistentFile(Paths.get(nonexistentPath)))));
     }
 
     @Test
     @DisplayName("message should be shown when output file already exists")
     public void outputFileAlreadyExistTest() throws IOException {
         final String outputPath = temporaryFile("out", ".fasta").toString();
-        final Validation<String, Path> verdict = CliHandler.validateOutputPath(outputPath);
-        assertThat(verdict, is(invalid(outputPath + CliHandlerMessages.FILE_ALREADY_EXIST)));
+        final Validation<Exception, Path> verdict = CliHandler.validateOutputPath(outputPath);
+        assertThat(verdict, is(invalid(new FileAlreadyExists(Paths.get(outputPath)))));
     }
 
     @Test
@@ -148,7 +157,7 @@ class CliHandlerTest {
     public void notWritableOutputFileTest() throws IOException {
         final Path inaccessibleDirectory = inaccessible(temporaryDirectory("inaccessible"));
         final String outputPath = inaccessibleDirectory.resolve("out.fasta").toString();
-        final Validation<String, Path> verdict = CliHandler.validateOutputPath(outputPath);
-        assertThat(verdict, is(invalid(outputPath + CliHandlerMessages.FILE_IS_NOT_WRITABLE)));
+        final Validation<Exception, Path> verdict = CliHandler.validateOutputPath(outputPath);
+        assertThat(verdict, is(invalid(new FileIsNotWritable(Paths.get(outputPath)))));
     }
 }

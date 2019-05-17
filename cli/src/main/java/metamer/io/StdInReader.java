@@ -19,7 +19,7 @@ public class StdInReader<T> implements Reader {
 
     public Stream<T> read() {
         try (final Stream<String> lines = new BufferedReader(new InputStreamReader(System.in)).lines()) {
-            final Either<String, Seq<T>> value = this.parser().read(lines);
+            final Either<Exception, Seq<T>> value = this.parser().read(lines);
             return value.map(Value::toJavaStream).getOrElse(Stream.empty());
         }
     }

@@ -1,6 +1,6 @@
 package metamer.cmdparser;
 
-import io.vavr.collection.List;
+import io.vavr.API;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
 import io.vavr.control.Try;
@@ -43,6 +43,16 @@ import static io.vavr.control.Validation.invalid;
 import static io.vavr.control.Validation.valid;
 import static java.util.function.Predicate.not;
 
+import metamer.cmdparser.exception.PathIsDirectory;
+import metamer.cmdparser.exception.NonexistentFile;
+import metamer.cmdparser.exception.InvalidFormat;
+import metamer.cmdparser.exception.NoLength;
+import metamer.cmdparser.exception.NoFormat;
+import metamer.cmdparser.exception.FileIsNotWritable;
+import metamer.cmdparser.exception.FileIsNotReadable;
+import metamer.cmdparser.exception.FileAlreadyExists;
+import metamer.cmdparser.exception.InvalidLength;
+
 public class CliHandler {
 
     private static Options options = new Options()
@@ -56,29 +66,27 @@ public class CliHandler {
         try {
             Match(parse(args)).of(
                     Case($Left($()), messages -> run(() -> messages.forEach(System.out::println))),
-                    Case($Right($()), assembler -> run(assembler::assemble))
+                    Case($Right($()), API::run)
             );
         } catch (final ParseException exp) {
-            System.out.println(CliHandlerMessages.NO_ARGUMENT + exp.getMessage());
+            System.out.println(exp.getMessage());
         }
     }
 
-    public static Either<Seq<String>, Assembler> parse(final String[] args) throws ParseException {
+    public static Either<Seq<Exception>, Runnable> parse(final String[] args) throws ParseException {
         final CommandLineParser parser = new DefaultParser();
         final CommandLine line = parser.parse(options, args);
 
         if (args.length == 0 || line.hasOption("help")) {
-            final List<String> usage = List.of(printHelp(options));
-            return Either.left(usage);
+            return Either.right(() -> System.out.println(printHelp(options)));
         }
 
         final String k = line.getOptionValue("k");
         final String format = line.getOptionValue("format");
-        final Validation<Seq<String>, Assembler> validation;
+        final Validation<Seq<Exception>, Assembler> validation;
         if (line.hasOption("input") && line.hasOption("output")) {
             validation = validateFromFileToFile(
-                    line.getOptionValue("input"), line.getOptionValue("output"), k, format
-            );
+                    line.getOptionValue("input"), line.getOptionValue("output"), k, format);
         } else if (line.hasOption("input")) {
             validation = validateFromFileToStd(line.getOptionValue("input"), k, format);
         } else if (line.hasOption("output")) {
@@ -87,10 +95,10 @@ public class CliHandler {
             validation = validateFromStdToStd(k, format);
         }
 
-        return validation.toEither();
+        return validation.toEither().map(assembler -> assembler::assemble);
     }
 
-    public static Validation<Seq<String>, Assembler> validateFromFileToFile(
+    public static Validation<Seq<Exception>, Assembler> validateFromFileToFile(
             final String input,
             final String output,
             final String kValue,
@@ -107,7 +115,7 @@ public class CliHandler {
         });
     }
 
-    public static Validation<Seq<String>, Assembler> validateFromFileToStd(
+    public static Validation<Seq<Exception>, Assembler> validateFromFileToStd(
             final String input,
             final String kValue,
             final String formatValue) {
@@ -122,7 +130,7 @@ public class CliHandler {
         });
     }
 
-    public static Validation<Seq<String>, Assembler> validateFromStdToFile(
+    public static Validation<Seq<Exception>, Assembler> validateFromStdToFile(
             final String output,
             final String kValue,
             final String formatValue) {
@@ -137,7 +145,7 @@ public class CliHandler {
         });
     }
 
-    public static Validation<Seq<String>, Assembler> validateFromStdToStd(
+    public static Validation<Seq<Exception>, Assembler> validateFromStdToStd(
             final String kValue,
             final String formatValue) {
         return combine(validateK(kValue), validateFormat(formatValue)).ap((k, format) -> {
@@ -147,40 +155,36 @@ public class CliHandler {
         });
     }
 
-    public static Validation<String, Path> validateInputPath(final String path) {
+    public static Validation<Exception, Path> validateInputPath(final String path) {
         final Predicate<File> canRead = file -> Files.isReadable(file.toPath());
-        return path == null
-                ? invalid(CliHandlerMessages.NO_FILE_PATH)
-                : Match(Paths.get(path).toFile()).of(
-                Case($(not(File::exists)), () -> invalid(path + CliHandlerMessages.FILE_DOES_NOT_EXIST)),
-                Case($(not(canRead)), () -> invalid(path + CliHandlerMessages.FILE_IS_NOT_READABLE)),
-                Case($(File::isDirectory), () -> invalid(path + CliHandlerMessages.PATH_IS_DIRECTORY)),
+        return Match(Paths.get(path).toFile()).of(
+                Case($(not(File::exists)), () -> invalid(new NonexistentFile(Paths.get(path)))),
+                Case($(not(canRead)), () -> invalid(new FileIsNotReadable(Paths.get(path)))),
+                Case($(File::isDirectory), () -> invalid(new PathIsDirectory(Paths.get(path)))),
                 Case($(), file -> valid(file.toPath()))
         );
     }
 
-    public static Validation<String, Path> validateOutputPath(final String path) {
+    public static Validation<Exception, Path> validateOutputPath(final String path) {
         final Predicate<File> canWrite = file -> Files.isWritable(file.toPath().getParent());
-        return path == null
-                ? invalid(CliHandlerMessages.NO_FILE_PATH)
-                : Match(Paths.get(path).toFile()).of(
-                Case($(File::isDirectory), () -> invalid(path + CliHandlerMessages.PATH_IS_DIRECTORY)),
-                Case($(File::exists), () -> invalid(path + CliHandlerMessages.FILE_ALREADY_EXIST)),
-                Case($(not(canWrite)), () -> invalid(path + CliHandlerMessages.FILE_IS_NOT_WRITABLE)),
+        return Match(Paths.get(path).toFile()).of(
+                Case($(File::isDirectory), () -> invalid(new PathIsDirectory(Paths.get(path)))),
+                Case($(File::exists), () -> invalid(new FileAlreadyExists(Paths.get(path)))),
+                Case($(not(canWrite)), () -> invalid(new FileIsNotWritable(Paths.get(path)))),
                 Case($(), file -> valid(file.toPath()))
         );
     }
 
-    public static Validation<String, Integer> validateK(final String k) {
+    public static Validation<Exception, Integer> validateK(final String k) {
         return k == null
-                ? invalid(CliHandlerMessages.NO_LENGTH)
-                : Try.of(() -> Integer.parseInt(k)).toValid(CliHandlerMessages.INVALID_LENGTH);
+                ? invalid(new NoLength())
+                : Try.of(() -> Integer.parseInt(k)).toValid(new InvalidLength(k));
     }
 
-    public static Validation<String, Format> validateFormat(final String format) {
+    public static Validation<Exception, Format> validateFormat(final String format) {
         return format == null
-                ? invalid(CliHandlerMessages.NO_FORMAT)
-                : Try.of(() -> Format.valueOf(format.toUpperCase())).toValid(CliHandlerMessages.INVALID_FORMAT);
+                ? invalid(new NoFormat())
+                : Try.of(() -> Format.valueOf(format.toUpperCase())).toValid(new InvalidFormat(format));
     }
 
     private static String printHelp(final Options options) {

@@ -3,6 +3,9 @@ package metamer.fasta;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
 import io.vavr.control.Option;
+import metamer.fasta.exception.EmptyList;
+import metamer.fasta.exception.InvalidIdentifier;
+import metamer.fasta.exception.InvalidNumberOfLines;
 import metamer.io.Parser;
 
 import java.util.ArrayList;
@@ -51,16 +54,16 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Either<String, Record> read(final List<String> lines) {
+    public Either<Exception, Record> read(final List<String> lines) {
         if (lines.size() < 2) {
-            return Either.left("We need more than two lines");
+            return Either.left(new InvalidNumberOfLines(lines.size()));
         }
         final String description = lines.get(0);
         if (description.charAt(0) != '>') {
-            return Either.left("First string is not a indificator");
+            return Either.left(new InvalidIdentifier(description.charAt(0)));
         }
         if (Option.none().equals(head(lines))) {
-            return Either.left("Empty list");
+            return Either.left(new EmptyList());
         }
 
         final String uniqI;
@@ -80,9 +83,9 @@ public class Fasta implements Parser<Record> {
     }
 
     @Override
-    public Either<String, Seq<Record>> read(final Stream<String> lines) {
+    public Either<Exception, Seq<Record>> read(final Stream<String> lines) {
         final Stream<List<String>> chunks = chunks(splitBefore(line -> line.startsWith(IDENTIFIER_PREFIX)), lines);
-        final Seq<Either<String, Record>> eithers = io.vavr.collection.List.ofAll(chunks.map(this::read));
+        final Seq<Either<Exception, Record>> eithers = io.vavr.collection.List.ofAll(chunks.map(this::read));
         return Either.sequenceRight(eithers);
     }
 

@@ -21,7 +21,7 @@ public class FileReader<T> implements Reader {
 
     public Stream<T> read() {
         try (final Stream<String> lines = Files.lines(path)) {
-            final Either<String, Seq<T>> value = this.parser().read(lines);
+            final Either<Exception, Seq<T>> value = this.parser().read(lines);
             return value.map(Value::toJavaStream).getOrElse(Stream.empty());
         } catch (final IOException e) {
             throw new RuntimeException("Can't parse :(");

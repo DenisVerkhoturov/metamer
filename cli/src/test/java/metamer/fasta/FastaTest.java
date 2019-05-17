@@ -15,7 +15,7 @@ public class FastaTest {
     @Test
     @DisplayName("records should contain correct information when file was read")
     void testReadRecordsFromFile() {
-        final Either<String, Seq<Record>> records = Fasta.parser().read(Stream.of(
+        final Either<Exception, Seq<Record>> records = Fasta.parser().read(Stream.of(
                 ">id1",
                 "abc1",
                 ">id2",
