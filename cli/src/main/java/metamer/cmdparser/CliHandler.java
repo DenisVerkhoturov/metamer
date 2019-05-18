@@ -26,11 +26,11 @@ import org.apache.commons.cli.ParseException;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
 
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
@@ -148,18 +148,19 @@ public class CliHandler {
     }
 
     public static Validation<String, Path> validateInputPath(final String path) {
+        final Predicate<File> canRead = file -> Files.isReadable(file.toPath());
         return path == null
                 ? invalid(CliHandlerMessages.NO_FILE_PATH)
                 : Match(Paths.get(path).toFile()).of(
                 Case($(not(File::exists)), () -> invalid(path + CliHandlerMessages.FILE_DOES_NOT_EXIST)),
-                Case($(not(File::canRead)), () -> invalid(path + CliHandlerMessages.FILE_IS_NOT_READABLE)),
+                Case($(not(canRead)), () -> invalid(path + CliHandlerMessages.FILE_IS_NOT_READABLE)),
                 Case($(File::isDirectory), () -> invalid(path + CliHandlerMessages.PATH_IS_DIRECTORY)),
                 Case($(), file -> valid(file.toPath()))
         );
     }
 
     public static Validation<String, Path> validateOutputPath(final String path) {
-        final Predicate<File> canWrite = file -> file.toPath().getParent().toFile().canWrite();
+        final Predicate<File> canWrite = file -> Files.isWritable(file.toPath().getParent());
         return path == null
                 ? invalid(CliHandlerMessages.NO_FILE_PATH)
                 : Match(Paths.get(path).toFile()).of(
@@ -169,7 +170,6 @@ public class CliHandler {
                 Case($(), file -> valid(file.toPath()))
         );
     }
-
 
     public static Validation<String, Integer> validateK(final String k) {
         return k == null
