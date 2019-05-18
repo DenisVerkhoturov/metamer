@@ -6,8 +6,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,10 +16,13 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryType;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
-import static java.nio.file.attribute.PosixFilePermissions.asFileAttribute;
-import static java.nio.file.attribute.PosixFilePermissions.fromString;
 import static java.util.stream.Collectors.toList;
 import static metamer.functional.tests.Utils.temporaryDirectory;
 import static metamer.functional.tests.Utils.temporaryPath;
@@ -52,6 +53,33 @@ public class FunctionalTest {
             ">id1 test",
             "DEAB"
     );
+
+    private static Path inaccessible(final Path path) throws IOException {
+        final String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            final UserPrincipal currentUser =
+                    path
+                            .getFileSystem()
+                            .getUserPrincipalLookupService()
+                            .lookupPrincipalByName(System.getProperty("user.name"));
+            final AclFileAttributeView view = Files.getFileAttributeView(path, AclFileAttributeView.class);
+            final AclEntry denyReadAndWrite =
+                    AclEntry
+                            .newBuilder()
+                            .setType(AclEntryType.DENY)
+                            .setPrincipal(currentUser)
+                            .setPermissions(AclEntryPermission.READ_DATA, AclEntryPermission.ADD_FILE)
+                            .build();
+
+            final List<AclEntry> acl = view.getAcl();
+            acl.add(0, denyReadAndWrite);
+            view.setAcl(acl);
+        } else {
+            path.toFile().setReadable(false);
+            path.toFile().setWritable(false);
+        }
+        return path;
+    }
 
     @BeforeEach
     public void setUpStream() {
@@ -127,12 +155,10 @@ public class FunctionalTest {
     }
 
     @Test
-    @DisabledOnOs(OS.WINDOWS)
     @DisplayName("message should be shown when input file is not readable")
     public void notReadableInputFileTest() throws IOException {
-        final Path inputPath = Files.createTempFile("inaccessible", ".fasta",
-                asFileAttribute(fromString("---------")));
-        final Path outputPath = temporaryPath("out", "fasta");
+        final Path inputPath = inaccessible(temporaryFile("inaccessible", ".fasta"));
+        final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected = inputPath.toString() + CliHandlerMessages.FILE_IS_NOT_READABLE + newLine;
 
@@ -141,12 +167,11 @@ public class FunctionalTest {
     }
 
     @Test
-    @DisabledOnOs(OS.WINDOWS)
     @DisplayName("message should be shown when output file is not writable")
     public void notWritableOutputFileTest() throws IOException {
         final Path inputPath = temporaryFile("inp", ".fasta");
-        final Path inaccessible = temporaryDirectory("inaccessible", asFileAttribute(fromString("---------")));
-        final Path outputPath = inaccessible.resolve("out.fasta");
+        final Path inaccessibleDirectory = inaccessible(temporaryDirectory("inaccessible"));
+        final Path outputPath = inaccessibleDirectory.resolve("out.fasta");
 
         final String expected = outputPath.toString() + CliHandlerMessages.FILE_IS_NOT_WRITABLE + newLine;
 
