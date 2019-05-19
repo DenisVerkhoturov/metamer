@@ -57,20 +57,23 @@ class GraphTest {
     public void testOptimization() {
         Graph gr = Graph.of(
                 3,
-                Map.entry(new Node("MU"), new Node("UA")),
-                Map.entry(new Node("UA"), new Node("AB")),
-                Map.entry(new Node("HA"), new Node("AB")),
-                Map.entry(new Node("AB"), new Node("BC")),
-                Map.entry(new Node("BC"), new Node("CD")),
-                Map.entry(new Node("CD"), new Node("DT")),
-                Map.entry(new Node("CD"), new Node("DR"))
+                Map.entry(new Node("AT"), new Node("TG")),
+                Map.entry(new Node("TG"), new Node("GG")),
+                Map.entry(new Node("GG"), new Node("GC")),
+                Map.entry(new Node("GC"), new Node("CG")),
+                Map.entry(new Node("CG"), new Node("GT")),
+                Map.entry(new Node("GT"), new Node("TG")),
+                Map.entry(new Node("TG"), new Node("GC")),
+                Map.entry(new Node("GC"), new Node("CA"))
         );
         Graph optGr = gr.optimizeGraph();
-        assertThat(optGr.getNodes(), hasKey("ABCD"));
-        assertThat(optGr.getNodes(), hasKey("DR"));
-        assertThat(optGr.getNodes(), hasKey("DT"));
-        assertThat(optGr.getNodes(), hasKey("MUA"));
-        assertThat(optGr.getNodes(), hasKey("HA"));
+        GraphCycle t = new GraphCycle(optGr, 3);
+        assertThat(optGr.getNodes(), hasKey("AT"));
+        assertThat(optGr.getNodes(), hasKey("TG"));
+        assertThat(optGr.getNodes(), hasKey("GG"));
+        assertThat(optGr.getNodes(), hasKey("GC"));
+        assertThat(optGr.getNodes(), hasKey("CGT"));
+        assertThat(optGr.getNodes(), hasKey("CA"));
     }
 
     @Test

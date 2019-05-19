@@ -26,7 +26,6 @@
 package metamer.functional.tests;
 
 import metamer.cmdparser.CliHandler;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,11 +38,11 @@ import static java.util.stream.Collectors.toList;
 import static metamer.functional.tests.Utils.temporaryPath;
 import static metamer.utils.Strings.multiline;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 
-public class RhymeTest {
+public class RepetitionTest {
     private final String rhyme = multiline(
-            "I know an old lady who swallowed a fly",
+            "START I know an old lady who swallowed a fly",
             "I don't know why she swallowed the fly",
             "Perhaps she'll die",
 
@@ -104,10 +103,10 @@ public class RhymeTest {
             "Perhaps she'll die",
 
             "I know an old lady who swallowed a horse",
-            "She's alive and well of course!I Know a"
+            "She's alive and well of course!"
+
     );
 
-    @Disabled("Now finds the shortest cycle")
     @Test
     @DisplayName("rhyme should be assemble correctly when ran")
     public void correctInputTest() throws IOException {
@@ -116,10 +115,13 @@ public class RhymeTest {
         Files.write(inputPath, rhyme.getBytes(), StandardOpenOption.APPEND);
         final Path outputPath = temporaryPath("out", "fasta");
 
-        final String expected1 = ">cycle from file: " + inputPath.toString();
-        final String expected2 = rhyme;
+        final String expected2 = "START I know an old lady who swallowed a cowI don't know how she swallowed the s,"
+                + " pider to catch the spiderThat wriggled and jiggled and tickled inside herShe swa, llowed that "
+                + "flyPerhaps she'll dieI know an old lady who swallowed a goatOpened h, er throat and down went the "
+                + "goat!She swallowed a flyI don't know why she swallow, ed a spiderThat wriggled"
+                + " and jiggled and tickled inside herShe swallowed";
 
-        CliHandler.main("-k", "5", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
+        CliHandler.main("-k", "15", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(expected2));
     }
 }

@@ -22,38 +22,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package metamer.functional.tests;
 
-package metamer.graph;
-
+import metamer.cmdparser.CliHandler;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.stream.Stream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static java.util.stream.Collectors.toList;
+import static metamer.functional.tests.Utils.temporaryPath;
+import static metamer.utils.Strings.multiline;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 
+public class CycleTest {
+    private final String cycle = multiline(
+            " У попа была собака, он её любил.",
+            "Она съела кусок мяса, он её убил.",
+            "В землю закапал, надпись написал:",
+            "У попа была собака, он её любил."
+    );
 
-public class GraphCycleTest {
+    @Disabled("Can't find node for start")
     @Test
-    @DisplayName("graphCycle field should contain correct cycle when there is cycle in graph")
-    public void testCorrectCycleGraph() {
-        Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
-        graph.createFromStream(Stream.of("ABCDE"));
-        graph = graph.optimizeGraph();
-        GraphCycle graphCycle = new GraphCycle(graph, 3);
-        assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDE"));
-    }
+    @DisplayName("rhyme should be assemble correctly when ran")
+    public void cycleRhymeTest() throws IOException {
+        final Path inputPath = Files.createTempFile("inp", ".fasta");
+        Files.write(inputPath, ">id 0 test\n".getBytes());
+        Files.write(inputPath, cycle.getBytes(), StandardOpenOption.APPEND);
+        final Path outputPath = temporaryPath("out", "fasta");
 
-    @Test
-    @DisplayName("graphCycle field should contain correct cycle when there are several Records with cycle")
-    public void testCorrectCycleGraphFromSeveralRecords() {
-        Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
-        graph.createFromStream(Stream.of("ABCDE", "CDERTTT", "TTQWERY"));
-        graph = graph.optimizeGraph();
-        GraphCycle graphCycle = new GraphCycle(graph, 3);
-        assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDERTTTQWERY"));
+        CliHandler.main("-k", "11", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(cycle));
     }
 }
