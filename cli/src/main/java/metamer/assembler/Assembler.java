@@ -31,6 +31,7 @@ import metamer.graph.GraphCycle;
 
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -49,7 +50,12 @@ public class Assembler {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), k);
         graph.createFromStream(reads);
         final GraphCycle graphCycle = new GraphCycle(graph.optimizeGraph(), k);
-        writer.accept(Stream.of(new Record("FIX ME", "", graphCycle.findCycle())));
+        final AtomicInteger counter = new AtomicInteger();
+        final Stream<Record> contigs = graphCycle.findCycle().map(e -> {
+            counter.getAndIncrement();
+            return new Record("seq" + counter, "", e);
+        });
+        writer.accept(contigs);
     }
 
     @Override

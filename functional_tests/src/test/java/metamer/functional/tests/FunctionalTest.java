@@ -67,7 +67,6 @@ import static metamer.functional.tests.Utils.temporaryFile;
 import static metamer.utils.Strings.multiline;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
 
@@ -86,9 +85,7 @@ public class FunctionalTest {
             "--- HELP ---" + newLine);
     private final String content = multiline(
             ">id0 test",
-            "ABCDEA",
-            ">id1 test",
-            "DEAB"
+            "ATGGCGTGCD"
     );
 
     private static Path inaccessible(final Path path) throws IOException {
@@ -271,12 +268,13 @@ public class FunctionalTest {
 
         final Path outputPath = temporaryPath("out", ".fasta");
 
-        final String expected1 = ">FIX ME";
-        final String expected2 = "DEABCD";
+        final String expected1 = ">seq1";
+        final String expected2 = "ATGGCGTGCGTGGCD";
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        CliHandler.main("-k", "4", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
 
-        assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
+        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(expected1));
+        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(expected2));
     }
 
     @Test
@@ -285,10 +283,10 @@ public class FunctionalTest {
         final Path inputPath = temporaryFile("inp", ".fasta");
         Files.write(inputPath, content.getBytes());
 
-        final String expected1 = ">FIX ME";
-        final String expected2 = "DEABCD";
+        final String expected1 = ">seq";
+        final String expected2 = "ATGGCGTGCGTGGCD";
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-i", inputPath.toString());
+        CliHandler.main("-k", "4", "-format", "fasta", "-i", inputPath.toString());
         assertThat(testOut.toString(), containsString(expected1));
         assertThat(testOut.toString(), containsString(expected2));
     }
@@ -298,21 +296,21 @@ public class FunctionalTest {
     public void readingFromStdinTest() throws IOException {
         final Path outputPath = temporaryPath("out", ".fasta");
 
-        final String expected1 = ">FIX ME";
-        final String expected2 = "DEABCD";
+        final String expected1 = ">seq";
+        final String expected2 = "ATGGCGTGCGTGGCD";
 
-        CliHandler.main("-k", "3", "-format", "fasta", "-o", outputPath.toString());
+        CliHandler.main("-k", "4", "-format", "fasta", "-o", outputPath.toString());
         assertThat(outputPath.toFile(), anExistingFile());
-        assertThat(Files.lines(outputPath).collect(toList()), contains(expected1, expected2));
+        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(expected2));
     }
 
     @Test
     @DisplayName("stdin should be source & stdout should contain result when there is no input & output files")
     public void readingFromStdinWriteInStdoutTest() {
-        final String expected1 = ">FIX ME";
-        final String expected2 = "DEABCD";
+        final String expected1 = ">seq";
+        final String expected2 = "ATGGCGTGCGTGGCD";
 
-        CliHandler.main("-k", "3", "-format", "fasta");
+        CliHandler.main("-k", "4", "-format", "fasta");
         assertThat(testOut.toString(), containsString(expected1));
         assertThat(testOut.toString(), containsString(expected2));
     }
