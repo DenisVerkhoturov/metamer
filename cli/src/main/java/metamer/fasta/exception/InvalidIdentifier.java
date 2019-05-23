@@ -22,19 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fasta.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if identifier is invalid.
+ */
 public class InvalidIdentifier extends Exception {
     private final char identifier;
 
+    /**
+     * Constructor - initialize identifier field.
+     *
+     * @param identifier
+     */
     public InvalidIdentifier(final char identifier) {
         super("Provided identifier is invalid, a correct identifier is expected: " + identifier);
         this.identifier = identifier;
     }
 
+    /**
+     * Get identifier field.
+     *
+     * @return Identifier.
+     */
     public char identifier() {
         return this.identifier;
     }

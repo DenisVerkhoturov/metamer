@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.utils;
 
 import java.util.List;
@@ -36,7 +35,29 @@ import static java.util.Spliterator.SIZED;
 import static java.util.Spliterator.SORTED;
 import static java.util.Spliterator.SUBSIZED;
 
+/**
+ * A namespace for utility functions that work with {@link Stream streams}.
+ */
 public class Streams {
+
+    /**
+     * Split stream into chunks.
+     *
+     * Lazily and sequentially group provided stream into chunks using a {@link Splitter splitter} as a strategy.
+     *
+     * Example:
+     * {@code
+     * final Stream<Character> symbols = Stream.of('|', 'a', '|', 'b', 'c', '|');
+     * final Stream<List<Character>> chunks = chunks(splitBefore(symbol -> symbol.equals('|')), symbols);
+     * // Stream.of(List.of('|', 'a'), List.of('|', 'b', 'c'), List.of('|'))
+     * }
+     *
+     * @param splitter Strategy that defines the way provided {@code source} {@link Stream} will be split.
+     * @param source   Stream of elements that will be grouped.
+     * @param <T>      Grouping functions makes no difference about what to work with and only
+     * @return Stream of chunks provided that {@code source} {@link Stream} is not empty,
+     *         otherwise, an empty {@link Stream}.
+     */
     public static <T> Stream<List<T>> chunks(final Splitter<T> splitter, final Stream<T> source) {
         final Spliterator<T> sourceSpliterator = source.spliterator();
         final Iterator<T> sourceIterator = Spliterators.iterator(sourceSpliterator);

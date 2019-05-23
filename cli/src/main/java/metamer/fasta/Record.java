@@ -22,24 +22,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fasta;
 
 import metamer.io.HasSequence;
 
 import java.util.Objects;
 
+/**
+ * Class for forming fasta records.
+ */
 public class Record implements HasSequence {
     public final String uniqueIdentifier;
     public final String additionalInformation;
     public final String sequence;
 
+    /**
+     * Constructor - initializing fields.
+     *
+     * @param uniqueIdentifier      Unique identifier for current sequence.
+     * @param additionalInformation Additional information for current sequence.
+     * @param sequence              Current sequence.
+     */
     public Record(final String uniqueIdentifier, final String additionalInformation, final String sequence) {
         this.uniqueIdentifier = uniqueIdentifier;
         this.additionalInformation = additionalInformation;
         this.sequence = sequence;
     }
 
+    /**
+     * Constructor - initializing fields & there is no additional information.
+     * @param uniqueIdentifier Unique identifier for current sequence.
+     * @param sequence         Current sequence.
+     */
     public Record(final String uniqueIdentifier, final String sequence) {
         this(uniqueIdentifier, "", sequence);
     }

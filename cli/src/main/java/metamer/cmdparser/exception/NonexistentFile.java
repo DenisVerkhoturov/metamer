@@ -22,20 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
+/**
+ * Throw exception if file doesn't exist.
+ */
 public class NonexistentFile extends Exception {
     private final Path path;
-
+    /**
+     * Constructor - initialize @path field.
+     *
+     * @param path Path to file.
+     */
     public NonexistentFile(final Path path) {
         super("Provided file doesn't exists, a existent file is expected: " + path);
         this.path = path;
     }
-
+    /**
+     * Function to get path field.
+     *
+     * @return Path to file.
+     */
     public Path path() {
         return this.path;
     }

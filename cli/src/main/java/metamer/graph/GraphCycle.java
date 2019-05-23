@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.graph;
 
 import java.util.ArrayList;
@@ -32,18 +31,33 @@ import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 
-
+/**
+ * Class to find Euler's ways in de Bruijn graph.
+ */
 public class GraphCycle {
     private final Graph graph;
     private int k;
     private List<String> contigs;
 
+    /**
+     * Constructor - initializing fields & paint all nodes into WHITE color.
+     *
+     * @param graph Pptimized version of graph from previous stages.
+     * @param k Length of kmer.
+     */
     public GraphCycle(final Graph graph, final int k) {
         this.graph = graph;
         this.k = k;
         this.contigs = new ArrayList<>();
     }
 
+    /**
+     * Realization of finding Eiler's path.
+     *
+     * @param currentNode Node with start position, tree root.
+     * @param str current version of result string.
+     * @param map map with node and all his neighbours.
+     */
     private void dfc(final Node currentNode, final String str, final Map<Node, List<Node>> map) {
         final List<Node> relatedNodes = new ArrayList<>(map.get(currentNode));
 
@@ -59,6 +73,11 @@ public class GraphCycle {
         }
     }
 
+    /**
+     * Function for finding the first node without parent to start.
+     *
+     * @return stream of strings equal with the first string length.
+     */
     public Stream<String> findCycle() {
         for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
             if (entry.getValue().nin == 0) {

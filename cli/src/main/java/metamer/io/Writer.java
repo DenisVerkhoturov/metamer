@@ -22,13 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.io;
 
 import java.util.stream.Stream;
 
+/**
+ * Interface for writing to output sources.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public interface Writer<T> {
+    /**
+     * Function for writing the result into output source.
+     *
+     * @param lines Stream of lines which we got after workflow.
+     */
     void write(Stream<T> lines);
+
+    /**
+     * Implement parser interface for further work.
+     */
     Parser<T> parser();
+
+    /**
+     * Creating an unique id.
+     *
+     * @return Current id.
+     */
     String id();
 }

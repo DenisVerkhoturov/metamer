@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.utils;
 
 import java.util.ArrayList;
@@ -31,11 +30,21 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
+/**
+ *A namespace for utility functions for "Lazy parsing" strategy.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public class SplitBefore<T> implements Iterator<List<T>> {
     private final Iterator<T> downstream;
     private final Predicate<T> delimiter;
     private T iteratorValue;
 
+    /**
+     * Costructor - initializing fields.
+     * @param downstream    Next iterator from stream.
+     * @param delimiter     Type of delimiter between records (> or @).
+     */
     SplitBefore(final Iterator<T> downstream, final Predicate<T> delimiter) {
         this.downstream = downstream;
         this.delimiter = delimiter;

@@ -22,20 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
+/**
+ * Throws exception if file already exists.
+ */
 public class FileAlreadyExists extends Exception {
     private final Path path;
 
+    /**
+     * Constructor - initialize @path field.
+     *
+     * @param path Path to file
+     */
     public FileAlreadyExists(final Path path) {
         super("Provided file already exists, a nonexistent file is expected: " + path);
         this.path = path;
     }
 
+    /**
+     * Function to get path field.
+     *
+     * @return Path to file
+     */
     public Path path() {
         return this.path;
     }

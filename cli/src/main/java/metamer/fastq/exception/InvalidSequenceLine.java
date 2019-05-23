@@ -22,19 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fastq.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if sequenceLine is wrong.
+ */
 public class InvalidSequenceLine extends Exception {
     private final String sequenceLine;
 
+    /**
+     * Constructor - initialize sequenceLine field.
+     *
+     * @param sequenceLine
+     */
     public InvalidSequenceLine(final String sequenceLine) {
         super("Provided fastQ sequence line is invalid, a correct sequence line is expected: " + sequenceLine);
         this.sequenceLine = sequenceLine;
     }
 
+    /**
+     * Get sequenceLine field.
+     *
+     * @return SequenceLine of current record.
+     */
     public String sequenceLine() {
         return this.sequenceLine;
     }

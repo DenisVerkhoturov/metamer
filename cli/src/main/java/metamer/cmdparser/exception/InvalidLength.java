@@ -22,19 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.util.Objects;
 
+/**
+ * Throws exception if length is invalid.
+ */
 public class InvalidLength extends Exception {
     private final String length;
 
+    /**
+     * Constructor - initialize length field.
+     *
+     * @param length Kmer's length
+     */
     public InvalidLength(final String length) {
         super("Provided length of kmers is invalid, a correct length is expected: " + length);
         this.length = length;
     }
 
+    /**
+     * Get k field.
+     *
+     * @return Kmer's length
+     */
     public String length() {
         return this.length;
     }

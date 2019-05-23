@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fastq;
 
 import io.vavr.collection.Seq;
@@ -45,6 +44,9 @@ import static metamer.utils.Lists.head;
 import static metamer.utils.Splitter.splitBefore;
 import static metamer.utils.Streams.chunks;
 
+/**
+ * Class for work with fastq format.
+ */
 public class FastQ implements Parser<Record> {
     private static final String IDENTIFIER_PREFIX = "@";
 
@@ -53,16 +55,40 @@ public class FastQ implements Parser<Record> {
     private FastQ() {
     }
 
+    /**
+     * Function for collecting record into stream of strings.
+     *
+     * Work with one (fastq) Record at a time.
+     *
+     * @param record Consist of several strings anf fields.
+     * @return Stream of strings made from input record.
+     */
     @Override
     public Stream<String> show(final Record record) {
         return null;
     }
 
+    /**
+     * Function for collecting stream of records into stream of strings.
+     *
+     * Call show(final Record record}) function for every (fastq) Record in stream.
+     *
+     * @param records Stream of records which were formed after graph assembly.
+     * @return Stream of strings with information of all records.
+     */
     @Override
     public Stream<String> show(final Stream<Record> records) {
         return null;
     }
 
+    /**
+     * Function for creating sequence of fastq records from stream of strings.
+     *
+     * Call read(final List<String> lines) for each read list.
+     *
+     * @param lines Stream of lines read from input source.
+     * @return Exception if there aere some mistakes with reading or correct sequence of Records.
+     */
     @Override
     public Either<Exception, Seq<Record>> read(final Stream<String> lines) {
         final Stream<List<String>> chunks = chunks(splitBefore(line -> line.startsWith(IDENTIFIER_PREFIX)), lines);
@@ -71,6 +97,12 @@ public class FastQ implements Parser<Record> {
 
     }
 
+    /**
+     * Function for creating records from lines read from input source.
+     *
+     * @param lines List of strings read from input source
+     * @return Exception if there were some mistakes or correctly formed fasta Record.
+     */
     @Override
     public Either<Exception, Record> read(final List<String> lines) {
         if (lines.size() < 2) {
@@ -110,7 +142,11 @@ public class FastQ implements Parser<Record> {
 
         return Either.right(new Record(tmpId, tmpDescription, lines.get(1), lines.get(3).getBytes()));
     }
-
+    /**
+     * Static constructor - try to avoid OOP and create only one instance of fastq.
+     *
+     * @return Instance of Fastq.
+     */
     public static FastQ parser() {
         return instance;
     }

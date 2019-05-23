@@ -22,12 +22,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.utils;
 
 import java.nio.file.Path;
 
+/**
+ * A namespace for utility functions that work with every path in project.
+ */
 public class Paths {
+    /**
+     * Allows to get path's extension.
+     *
+     * @param path Initial path to file.
+     * @return Path's extension as a string.
+     */
     public static String extension(final Path path) {
         String s = path.getFileName().toString();
         final int index = s.lastIndexOf(".");

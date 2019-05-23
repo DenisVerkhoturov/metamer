@@ -22,14 +22,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fastq.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if qualityScoreLine has wrong length.
+ */
 public class InvalidQualityScoreLineLength extends Exception {
     private final int qualityScoreLineLength;
 
+    /**
+     * Constructor - initialize qualityScoreLineLength field.
+     *
+     * @param qualityScoreLineLength
+     */
     public InvalidQualityScoreLineLength(final int qualityScoreLineLength) {
         super("Provided fastQ quality score line length is invalid, " +
                 "a correct quality score line length is expected" +
@@ -37,6 +44,11 @@ public class InvalidQualityScoreLineLength extends Exception {
         this.qualityScoreLineLength = qualityScoreLineLength;
     }
 
+    /**
+     * Get qualityScoreLineLength field.
+     *
+     * @return QualityScoreLineLength of current record.
+     */
     public int qualityScoreLineLength() {
         return this.qualityScoreLineLength;
     }

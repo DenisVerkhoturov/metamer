@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.io;
 
 import io.vavr.Value;
@@ -33,15 +32,30 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.stream.Stream;
 
+/**
+ * Class for reading from stdin.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public class StdInReader<T> implements Reader {
     private String id;
     private Parser<T> parser;
 
+    /**
+     * Constructor - initializing all fields.
+     *
+     * @param parser Type of parser for correct choice for record type.
+     */
     public StdInReader(final Parser<T> parser) {
         this.id = System.in.toString();
         this.parser = parser;
     }
 
+    /**
+     * Function for reading from stdin.
+     *
+     * @return Stream of records for further work.
+     */
     public Stream<T> read() {
         try (final Stream<String> lines = new BufferedReader(new InputStreamReader(System.in)).lines()) {
             final Either<Exception, Seq<T>> value = this.parser().read(lines);
@@ -49,10 +63,22 @@ public class StdInReader<T> implements Reader {
         }
     }
 
+    /**
+     * Get current parser.
+     *
+     * Parser may be one of {@link metamer.fasta.Fasta} of {@link metamer.fastq.FastQ}
+     *
+     * @return Parser.
+     */
     public Parser<T> parser() {
         return this.parser;
     }
 
+    /**
+     * Get sequence id.
+     *
+     * @return Id.
+     */
     public String id() {
         return this.id;
     }

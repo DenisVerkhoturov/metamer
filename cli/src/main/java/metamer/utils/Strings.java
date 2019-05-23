@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.utils;
 
 import java.util.stream.Stream;
@@ -31,13 +30,29 @@ import static java.util.stream.Collectors.joining;
 import static java.util.Arrays.stream;
 import static java.util.stream.IntStream.rangeClosed;
 
+/**
+ * A namespace for utility functions for working with strings.
+ */
 public class Strings {
     private final static String newLine = System.lineSeparator();
 
+    /**
+     * Allows present one long string as a group of several small ones.
+     *
+     * @param lines Array of strings to be collected into one.
+     * @return One long string with result.
+     */
     public static String multiline(final String... lines) {
         return stream(lines).collect(joining(newLine, "", newLine));
     }
 
+    /**
+     * Realization of classic "sliding window" strategy.
+     *
+     * @param str  Initial string which we want to cut.
+     * @param size Length of new string. Should be less than str.length().
+     * @return Stream of cut strings or empty stream if size > str.length.
+     */
     public static Stream<String> windows(final String str, final int size) {
         return size > str.length()
                 ? Stream.empty()

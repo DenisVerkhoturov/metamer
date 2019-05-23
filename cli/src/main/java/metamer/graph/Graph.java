@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.graph;
 
 import java.util.ArrayList;
@@ -37,12 +36,22 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static metamer.utils.Strings.windows;
 
+/**
+ * Class for building & optimizing de Bruijn graph.
+ */
 public class Graph {
 
     private Map<Node, List<Node>> neighbors;
     private Map<String, Node> nodes;
     private int k;
 
+    /**
+     * Constructor - initialize fields.
+     *
+     * @param neighbors Map consist of nodes and list of nodes connected with this one.
+     * @param nodes     Map consist of kmer strings and nodes responsible for this kmer.
+     * @param k         Length of kmer.
+     */
     public Graph(final Map<Node, List<Node>> neighbors, final Map<String, Node> nodes, final int k) {
         this.neighbors = neighbors;
         this.nodes = nodes;
@@ -58,14 +67,31 @@ public class Graph {
         windows(str, k).forEach(this::createNodesMap);
     }
 
+    /**
+     * Get map with nodes of our graph.
+     *
+     * @return Hashmap of nodes.
+     */
     public Map<String, Node> getNodes() {
         return new HashMap<>(this.nodes);
     }
 
+    /**
+     * Get map of neighbours for every node in graph.
+     *
+     * @return Hashmap of neighbours.
+     */
     public Map<Node, List<Node>> getNeighbors() {
         return new HashMap<>(this.neighbors);
     }
 
+    /**
+     * Function for optimizing our graph.
+     *
+     * Here we make one edge from several edges which can be connected only in one way.
+     *
+     * @return Optimized version of our graph.
+     */
     public Graph optimizeGraph() {
         Map<String, Node> nodesOptimized = new HashMap<>();
         Map<Node, List<Node>> neighborsOptimized = neighbors;
@@ -113,6 +139,11 @@ public class Graph {
         return new Graph(neighborsOptimized, nodesOptimized, k);
     }
 
+    /**
+     * Function for creating initial version of de Bruijn graph from stream of strings.
+     *
+     * @param stream Stream of strings read from input source.
+     */
     public void createFromStream(final Stream<String> stream) {
         stream.forEach(this::makeNodes);
         for (final Map.Entry<String, Node> entry : nodes.entrySet()) {
@@ -131,6 +162,13 @@ public class Graph {
         }
     }
 
+    /**
+     * Create graph with current edges.
+     *
+     * @param k     Length of kmer.
+     * @param edges Map of edges from input source.
+     * @return Initial version of graph.
+     */
     public static Graph of(final int k, final Map.Entry<Node, Node>... edges) {
         final Map<String, Node> nodes = new HashMap<>();
         final Map<Node, List<Node>> neighbors = new HashMap<>();
