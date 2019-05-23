@@ -22,19 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.util.Objects;
 
+/**
+ * Throws exception if format is invalid.
+ */
 public class InvalidFormat extends Exception {
     private final String format;
 
+    /**
+     * Constructor - initialize format field.
+     *
+     * @param format File format
+     */
     public InvalidFormat(final String format) {
         super("Provided format of data is invalid, a correct format is expected: " + format);
         this.format = format;
     }
 
+    /**
+     * Get format filed.
+     *
+     * @return Format
+     */
     public String format() {
         return this.format;
     }

@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser;
 
 import io.vavr.API;
@@ -78,6 +77,9 @@ import metamer.cmdparser.exception.FileIsNotReadable;
 import metamer.cmdparser.exception.FileAlreadyExists;
 import metamer.cmdparser.exception.InvalidLength;
 
+/**
+ * Implementation of command line arguments parsing.
+ */
 public class CliHandler {
 
     private static Options options = new Options()
@@ -98,6 +100,19 @@ public class CliHandler {
         }
     }
 
+    /**
+     * Control function to select correct scenario.
+     *
+     * Possible scenarios:
+     * 1. Reading from file & writing to file
+     * 2. Reading from file & writing to stdout
+     * 3. Reading from stdin & writing to file
+     * 4. Reading from stdin & writing to stdout.
+     *
+     * @param args Command line arguments or array of strings.
+     * @return Sequence of Exceptions if there were mistakes or {@link Assembler assembler}.
+     * @throws ParseException If there were some problems with files parsing.
+     */
     public static Either<Seq<Exception>, Runnable> parse(final String[] args) throws ParseException {
         final CommandLineParser parser = new DefaultParser();
         final CommandLine line = parser.parse(options, args);
@@ -123,6 +138,15 @@ public class CliHandler {
         return validation.toEither().map(assembler -> assembler::assemble);
     }
 
+    /**
+     * Validation function for file to file scenario.
+     *
+     * @param input       Path to input file in string form.
+     * @param output      Path to output file in string form.
+     * @param kValue      Kmer's length in string form.
+     * @param formatValue Format of input data.
+     * @return object of {@link Assembler}.
+     */
     public static Validation<Seq<Exception>, Assembler> validateFromFileToFile(
             final String input,
             final String output,
@@ -140,6 +164,15 @@ public class CliHandler {
         });
     }
 
+    /**
+     * Validation function for file to stdout scenario.
+     *
+     * @param input         Path to input file in string form.
+     * @param kValue        Kmer's length in string form.
+     * @param formatValue   Format of input data.
+     * @return object of {@link Assembler}.
+     */
+
     public static Validation<Seq<Exception>, Assembler> validateFromFileToStd(
             final String input,
             final String kValue,
@@ -155,6 +188,14 @@ public class CliHandler {
         });
     }
 
+    /**
+     * Validation function for stdin to file scenario.
+     *
+     * @param output        Path to output file in string form.
+     * @param kValue        Kmer's length in string form.
+     * @param formatValue   Format of input data.
+     * @return object of {@link Assembler}.
+     */
     public static Validation<Seq<Exception>, Assembler> validateFromStdToFile(
             final String output,
             final String kValue,
@@ -170,6 +211,13 @@ public class CliHandler {
         });
     }
 
+    /**
+     * Validation function for stdin to stdout scenario.
+     *
+     * @param kValue        Kmer's length in string form.
+     * @param formatValue   Format of input data.
+     * @return object of {@link Assembler}.
+     */
     public static Validation<Seq<Exception>, Assembler> validateFromStdToStd(
             final String kValue,
             final String formatValue) {
@@ -180,6 +228,14 @@ public class CliHandler {
         });
     }
 
+    /**
+     * Function for validating input path.
+     *
+     * Checks if input file is: not existent, non readable, not a directory.
+     *
+     * @param path Path to input file in string form.
+     * @return Exception if input file isn't correct or correct path to file.
+     */
     public static Validation<Exception, Path> validateInputPath(final String path) {
         final Predicate<File> canRead = file -> Files.isReadable(file.toPath());
         return Match(Paths.get(path).toFile()).of(
@@ -190,6 +246,14 @@ public class CliHandler {
         );
     }
 
+    /**
+     * Function for validating output path.
+     *
+     * Checks if output file is: existent, non writable, not a directory.
+     *
+     * @param path Path to output file in string form.
+     * @return Exception if output file isn't correct or correct path to file.
+     */
     public static Validation<Exception, Path> validateOutputPath(final String path) {
         final Predicate<File> canWrite = file -> Files.isWritable(file.toPath().getParent());
         return Match(Paths.get(path).toFile()).of(
@@ -200,12 +264,24 @@ public class CliHandler {
         );
     }
 
+    /**
+     * Function for validating kmer's length.
+     *
+     * @param k Kmer's length in string form.
+     * @return Exception if there length isn't correct or length as integer.
+     */
     public static Validation<Exception, Integer> validateK(final String k) {
         return k == null
                 ? invalid(new NoLength())
                 : Try.of(() -> Integer.parseInt(k)).toValid(new InvalidLength(k));
     }
 
+    /**
+     * Function for validating format.
+     *
+     * @param format Format of input data in form of string.
+     * @return Exception if format isn/t correct or format.
+     */
     public static Validation<Exception, Format> validateFormat(final String format) {
         return format == null
                 ? invalid(new NoFormat())

@@ -22,19 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fastq.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if information about quality was wrong.
+ */
 public class InvalidQualityScoreID extends Exception {
     private final String qualityScoreID;
 
+    /**
+     * Constructor - initialize qualityScoreID field.
+     *
+     * @param qualityScoreID
+     */
     public InvalidQualityScoreID(final String qualityScoreID) {
         super("Provided fastQ quality score ID is invalid, a correct quality score ID is expected: " + qualityScoreID);
         this.qualityScoreID = qualityScoreID;
     }
 
+    /**
+     * Get sequence line.
+     *
+     * @return Current sequnce line.
+     */
     public String sequenceLine() {
         return this.qualityScoreID;
     }

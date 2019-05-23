@@ -22,9 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
+/**
+ * Throw exception if there is no path.
+ */
 public class NoFilePath extends Exception {
     public NoFilePath() {
         super("No file path was provided, a correct filepath is expected");

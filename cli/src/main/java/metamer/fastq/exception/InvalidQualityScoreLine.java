@@ -22,20 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fastq.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if quality score isn't correct.
+ */
 public class InvalidQualityScoreLine extends Exception {
     private final String qualityScoreLine;
 
+    /**
+     * Constructor - initialize qualityScoreLine field.
+     *
+     * @param qualityScoreLine
+     */
     public InvalidQualityScoreLine(final String qualityScoreLine) {
         super("Provided fastQ quality score line contains invalid symbols, " +
                 "a correct quality score line is expected" + qualityScoreLine);
         this.qualityScoreLine = qualityScoreLine;
     }
 
+    /**
+     * Get qualityScoreLine.
+     *
+     * @return QualityScoreLine of current record.
+     */
     public String qualityScoreLine() {
         return this.qualityScoreLine;
     }

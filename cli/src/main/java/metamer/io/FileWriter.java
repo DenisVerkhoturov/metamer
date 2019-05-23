@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.io;
 
 import java.io.BufferedWriter;
@@ -31,15 +30,34 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+/**
+ * Class for writing to file.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public class FileWriter<T> implements Writer<T> {
     private Path path;
     private Parser<T> parser;
 
+    /**
+     * Constructor - initializing all fields.
+     *
+     * @param path      Path to current file.
+     * @param parser    Type of parser for correct choice for record type.
+     */
     public FileWriter(final Path path, final Parser<T> parser) {
         this.path = path;
         this.parser = parser;
     }
 
+    /**
+     * Write result of workflow process into file.
+     *
+     * This function creates output file. That is why there mustn't be any before start or we will
+     * get an exception.
+     *
+     * @param records Stream of records created after workflow.
+     */
     public void write(final Stream<T> records) {
         final Stream<String> lines = this.parser().show(records);
         final File file = path.toFile();
@@ -70,10 +88,22 @@ public class FileWriter<T> implements Writer<T> {
         }
     }
 
+    /**
+     * Get current parser.
+     *
+     * Parser may be one of {@link metamer.fasta.Fasta} of {@link metamer.fastq.FastQ}
+     *
+     * @return Parser.
+     */
     public Parser<T> parser() {
         return this.parser;
     }
 
+    /**
+     * Get sequence id.
+     *
+     * @return Id in future.
+     */
     public String id() {
         return this.path.toString();
     }

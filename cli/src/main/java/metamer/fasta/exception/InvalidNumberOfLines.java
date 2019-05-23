@@ -22,19 +22,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fasta.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if number of lines is invalid.
+ */
 public class InvalidNumberOfLines extends Exception {
     private final int numberOfLines;
 
+    /**
+     * Constructor - initialize number of lines field.
+     *
+     * @param numberOfLines Number of lines in list.
+     */
     public InvalidNumberOfLines(final int numberOfLines) {
         super("Provided number of lines is invalid, expected two lines at least: " + numberOfLines);
         this.numberOfLines = numberOfLines;
     }
 
+    /**
+     * Get number of lines.
+     *
+     * @return NumberOfLines field.
+     */
     public int numberOfLines() {
         return this.numberOfLines;
     }

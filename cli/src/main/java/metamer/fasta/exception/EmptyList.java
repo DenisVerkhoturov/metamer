@@ -22,9 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fasta.exception;
 
+/**
+ * Throw exception if list is empty.
+ */
 public class EmptyList extends Exception {
     public EmptyList() {
         super("Provided list of input strings is empty, expected correct list");

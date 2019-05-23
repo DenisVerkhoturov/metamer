@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.io;
 
 import io.vavr.Value;
@@ -35,15 +34,31 @@ import java.nio.file.Path;
 
 import java.util.stream.Stream;
 
+/**
+ * Class for reading from file.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public class FileReader<T> implements Reader {
     private Path path;
     private Parser<T> parser;
 
+    /**
+     * Constructor - initializing all fields.
+     *
+     * @param path      Path to current file.
+     * @param parser    Type of parser for correct choice for record type.
+     */
     public FileReader(final Path path, final Parser<T> parser) {
         this.path = path;
         this.parser = parser;
     }
 
+    /**
+     * Function for reading from file.
+     *
+     * @return Stream of records for further work.
+     */
     public Stream<T> read() {
         try (final Stream<String> lines = Files.lines(path)) {
             final Either<Exception, Seq<T>> value = this.parser().read(lines);
@@ -53,14 +68,31 @@ public class FileReader<T> implements Reader {
         }
     }
 
+    /**
+     * Get path to file.
+     *
+     * @return Path to file.
+     */
     public Path path() {
         return path;
     }
 
+    /**
+     * Get current parser.
+     *
+     * Parser may be one of {@link metamer.fasta.Fasta} of {@link metamer.fastq.FastQ}
+     *
+     * @return Parser.
+     */
     public Parser<T> parser() {
         return this.parser;
     }
 
+    /**
+     * Get sequence id.
+     *
+     * @return Id in future.
+     */
     public String id() {
         return this.path.toString();
     }

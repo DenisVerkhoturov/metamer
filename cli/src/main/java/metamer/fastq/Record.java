@@ -22,20 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.fastq;
 
 import metamer.io.HasSequence;
 
 import java.util.Arrays;
 import java.util.Objects;
-
+/**
+ * Class for forming fastq records.
+ */
 public class Record implements HasSequence {
     public final String id;
     public final String description;
     public final String sequence;
     public final byte[] quality;
 
+    /**
+     * Constructor - initializing all fields.
+     *
+     * @param id            Current record's id
+     * @param description   Current record's description
+     * @param sequence      Sequence for forming new record
+     * @param quality       Byte array representing quality field
+     */
     public Record(final String id, final String description, final String sequence, final byte[] quality) {
         this.id = id;
         this.description = description;

@@ -22,19 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if there is no format.
+ */
 public class NoFormat extends Exception {
     private final String format;
 
+    /**
+     * Constructor - if there is no format, initialize this field with null.
+     */
     public NoFormat() {
         super("No format of data was provided, a correct format must be provided");
         this.format = null;
     }
 
+    /**
+     * Get format field.
+     *
+     * @return Format field
+     */
     public String format() {
         return this.format;
     }

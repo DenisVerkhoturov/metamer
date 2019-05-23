@@ -22,20 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
+/**
+ * Throw exception if path is directory
+ */
 public class PathIsDirectory extends Exception {
     private final Path path;
-
+    /**
+     * Constructor - initialize @path field.
+     *
+     * @param path Path to file.
+     */
     public PathIsDirectory(final Path path) {
         super("Provided path is a directory, a file is expected: " + path);
         this.path = path;
     }
-
+    /**
+     * Function to get path field.
+     *
+     * @return Path to file.
+     */
     public Path path() {
         return this.path;
     }

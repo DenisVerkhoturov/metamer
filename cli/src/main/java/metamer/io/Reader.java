@@ -22,13 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.io;
 
 import java.util.stream.Stream;
 
+/**
+ * Interface for reading from input sources.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public interface Reader<T> {
+    /**
+     * Reading from input source.
+     *
+     * @return Stream of records with correct type.
+     */
     Stream<T> read();
+
+    /**
+     * Implement parser interface for further work.
+     */
     Parser<T> parser();
+
+    /**
+     * Creating an unique id.
+     *
+     * @return Current id.
+     */
     String id();
 }

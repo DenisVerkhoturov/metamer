@@ -22,16 +22,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.graph;
 
 import java.util.Objects;
 
+/**
+ * Class - entity for nodes of de Bruijn graph.
+ */
 public class Node {
     public String kmer;
     public int nin;
     public int nout;
 
+    /**
+     * Constructor - initializing all fiealds.
+     *
+     * @param kmer String with current kmer.
+     */
     Node(final String kmer) {
         this.kmer = kmer;
         this.nin = 0;
@@ -58,8 +65,7 @@ public class Node {
 
     @Override
     public String toString() {
-        //return " Kmer = " + this.kmer + ", nout = " + this.nout + ", nin = " + this.nin + " ";
-        return this.kmer;
+        return " Kmer = " + this.kmer + ", nout = " + this.nout + ", nin = " + this.nin + " ";
     }
 
 }

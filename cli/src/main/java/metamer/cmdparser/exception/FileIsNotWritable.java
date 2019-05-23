@@ -22,20 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.nio.file.Path;
 import java.util.Objects;
 
+/**
+ * Throws exception if file is not writable.
+ */
 public class FileIsNotWritable extends Exception {
     private final Path path;
-
+    /**
+     * Constructor - initialize @path field.
+     *
+     * @param path Path to file
+     */
     public FileIsNotWritable(final Path path) {
         super("Provided file is not writable, a writable file is expected: " + path);
         this.path = path;
     }
-
+    /**
+     * Function to get path field.
+     *
+     * @return Path to file
+     */
     public Path path() {
         return this.path;
     }

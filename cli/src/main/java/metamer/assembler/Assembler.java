@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.assembler;
 
 import metamer.fasta.Record;
@@ -35,17 +34,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+/**
+ * Management tool for whole graph assembly cycle.
+ */
 public class Assembler {
     private final Stream<String> reads;
     private final Consumer<Stream<Record>> writer;
     private final int k;
 
+    /**
+     * Constructor - create new object with some values.
+     *
+     * @param reads  Stream of reads which were read from source
+     * @param writer Place where we are going to write results
+     * @param k Kmer length
+     */
     public Assembler(final Stream<String> reads, final Consumer<Stream<Record>> writer, final int k) {
         this.reads = reads;
         this.writer = writer;
         this.k = k;
     }
 
+
+    /**
+     * Function for workflow control.
+     */
     public void assemble() {
         Graph graph = new Graph(new HashMap<>(), new HashMap<>(), k);
         graph.createFromStream(reads);

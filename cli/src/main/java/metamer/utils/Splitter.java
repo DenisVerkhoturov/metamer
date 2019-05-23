@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.utils;
 
 import java.util.Iterator;
@@ -30,7 +29,19 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+/**
+ * A namespace for "lazy parsing" realisation.
+ *
+ * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+ */
 public interface Splitter<T> extends Function<Iterator<T>, Iterator<List<T>>> {
+    /**
+     * Function to get realization of {@link SplitBefore}.
+     *
+     * @param delimiter Type of delimiter between records (> or @).
+     * @param <T>       Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
+     * @return anonymous realization  of {@link SplitBefore}.
+     */
     static <T> Splitter<T> splitBefore(final Predicate<T> delimiter) {
         return iterator -> new SplitBefore<>(iterator, delimiter);
     }

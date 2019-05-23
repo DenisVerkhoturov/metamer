@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.graph;
 
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +53,8 @@ public class GraphCycleTest {
         graph.createFromStream(Stream.of("ABCDE", "CDERTTT", "TTQWERY"));
         graph = graph.optimizeGraph();
         GraphCycle graphCycle = new GraphCycle(graph, 3);
+
         assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDERTTTQWERY"));
+
     }
 }

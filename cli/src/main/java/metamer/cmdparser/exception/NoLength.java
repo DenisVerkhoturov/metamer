@@ -22,19 +22,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 package metamer.cmdparser.exception;
 
 import java.util.Objects;
 
+/**
+ * Throw exception if there is no kmer's length.
+ */
 public class NoLength extends Exception {
     private final String length;
 
+    /**
+     * Constructor - if there is no length, initialize this field with null.
+     */
     public NoLength() {
         super("No length of kmers was provided, a correct length must be provided");
         this.length = null;
     }
 
+    /**
+     * Get kmer's length.
+     *
+     * @return Length.
+     */
     public String length() {
         return this.length;
     }
