@@ -169,6 +169,7 @@ public class Graph {
      * @param edges Map of edges from input source.
      * @return Initial version of graph.
      */
+    @SafeVarargs
     public static Graph of(final int k, final Map.Entry<Node, Node>... edges) {
         final Map<String, Node> nodes = new HashMap<>();
         final Map<Node, List<Node>> neighbors = new HashMap<>();
