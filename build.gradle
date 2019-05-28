@@ -73,6 +73,19 @@ allprojects {
     }
 }
 
+project('assembler') {
+    dependencies {
+        compile project(':api')
+        compile project(':utils')
+    }
+}
+
+project('cli') {
+    dependencies {
+        compile project(':assembler')
+    }
+}
+
 project('functional_tests') {
     dependencies {
         compile project(':cli')
