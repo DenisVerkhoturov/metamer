@@ -1,5 +1,5 @@
 language: java
-jdk: oraclejdk11
+jdk: openjdk11
 
 matrix:
   include:
@@ -10,9 +10,9 @@ matrix:
       language: shell
       filter_secrets: false
       install:
-        - choco install jdk11
-        - export JAVA_HOME="C:/Program Files/Java/jdk-11.0.2"
-        - export PATH="${PATH}:/c/Program Files/Java/jdk-11.0.2/bin"
+        - choco install openjdk11
+        - export JAVA_HOME="C:/Program Files/OpenJDK/jdk-11.0.2"
+        - export PATH="${PATH}:/c/Program Files/OpenJDK/jdk-11.0.2/bin"
       script:
         - bash gradlew --no-daemon check
 
