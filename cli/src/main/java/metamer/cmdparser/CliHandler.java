@@ -255,7 +255,7 @@ public class CliHandler {
      * @return Exception if output file isn't correct or correct path to file.
      */
     public static Validation<Exception, Path> validateOutputPath(final String path) {
-        final Predicate<File> canWrite = file -> Files.isWritable(file.toPath().getParent());
+        final Predicate<File> canWrite = file -> Files.isWritable(file.getAbsoluteFile().toPath().getParent());
         return Match(Paths.get(path).toFile()).of(
                 Case($(File::isDirectory), () -> invalid(new PathIsDirectory(Paths.get(path)))),
                 Case($(File::exists), () -> invalid(new FileAlreadyExists(Paths.get(path)))),
