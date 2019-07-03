@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static metamer.utils.Strings.windows;
 
 /**
@@ -68,12 +69,12 @@ public class Graph {
     }
 
     /**
-     * Get map with nodes of our graph.
+     * Get set with nodes of our graph.
      *
-     * @return Hashmap of nodes.
+     * @return set of nodes.
      */
-    public Map<String, Node> getNodes() {
-        return new HashMap<>(this.nodes);
+    public Set<Node> nodes() {
+        return new HashSet<>(nodes.values());
     }
 
     /**
@@ -86,8 +87,19 @@ public class Graph {
     }
 
     /**
-     * Function for optimizing our graph.
+     * Get edges for current version of graph.
      *
+     * @return HashSet of edges.
+     */
+    public Set<Edge> edges() {
+        return neighbors.entrySet().stream()
+                .flatMap(e -> e.getValue().stream().map(n -> new Edge(e.getKey(), n, k)))
+                .collect(toSet());
+    }
+
+    /**
+     * Function for optimizing our graph.
+     * <p>
      * Here we make one edge from several edges which can be connected only in one way.
      *
      * @return Optimized version of our graph.
@@ -144,11 +156,14 @@ public class Graph {
      *
      * @param stream Stream of strings read from input source.
      */
-    public void createFromStream(final Stream<String> stream) {
-        stream.forEach(this::makeNodes);
+    public static Graph graph(final int k, final Stream<String> stream) {
+        final Map<String, Node> nodes = new HashMap<>();
+        final Map<Node, List<Node>> neighbors = new HashMap<>();
+        final Graph graph = new Graph(neighbors, nodes, k);
+        stream.forEach(graph::makeNodes);
         for (final Map.Entry<String, Node> entry : nodes.entrySet()) {
             for (final Map.Entry<String, Node> entry2 : nodes.entrySet()) {
-                List<Node> list = this.neighbors.getOrDefault(entry.getValue(), new ArrayList<>());
+                List<Node> list = neighbors.getOrDefault(entry.getValue(), new ArrayList<>());
 
                 final String firstKey = entry.getKey().substring(1);
                 final String secondKey = entry2.getKey().substring(0, entry2.getKey().length() - 1);
@@ -157,9 +172,10 @@ public class Graph {
                     entry.getValue().nout++;
                     entry2.getValue().nin++;
                 }
-                this.neighbors.put(entry.getValue(), list);
+                neighbors.put(entry.getValue(), list);
             }
         }
+        return new Graph(neighbors, nodes, k);
     }
 
     /**
@@ -170,7 +186,7 @@ public class Graph {
      * @return Initial version of graph.
      */
     @SafeVarargs
-    public static Graph of(final int k, final Map.Entry<Node, Node>... edges) {
+    public static Graph graph(final int k, final Map.Entry<Node, Node>... edges) {
         final Map<String, Node> nodes = new HashMap<>();
         final Map<Node, List<Node>> neighbors = new HashMap<>();
         for (final Map.Entry<Node, Node> edge : edges) {

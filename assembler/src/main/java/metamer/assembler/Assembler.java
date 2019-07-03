@@ -28,11 +28,12 @@ import metamer.fasta.Record;
 import metamer.graph.Graph;
 import metamer.graph.GraphCycle;
 
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+
+import static metamer.graph.Graph.graph;
 
 /**
  * Management tool for whole graph assembly cycle.
@@ -60,8 +61,7 @@ public class Assembler {
      * Function for workflow control.
      */
     public void assemble() {
-        Graph graph = new Graph(new HashMap<>(), new HashMap<>(), k);
-        graph.createFromStream(reads);
+        final Graph graph = graph(k, reads);
         final GraphCycle graphCycle = new GraphCycle(graph.optimizeGraph(), k);
         final AtomicInteger counter = new AtomicInteger();
         final Stream<Record> contigs = graphCycle.findCycle().map(e -> {

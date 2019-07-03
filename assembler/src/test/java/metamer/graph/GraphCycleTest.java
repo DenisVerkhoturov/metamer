@@ -27,10 +27,10 @@ package metamer.graph;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static metamer.graph.Graph.graph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -39,9 +39,7 @@ public class GraphCycleTest {
     @Test
     @DisplayName("graphCycle field should contain correct cycle when there is cycle in graph")
     public void testCorrectCycleGraph() {
-        Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
-        graph.createFromStream(Stream.of("ABCDE"));
-        graph = graph.optimizeGraph();
+        Graph graph = graph(3, Stream.of("ABCDE")).optimizeGraph();
         GraphCycle graphCycle = new GraphCycle(graph, 3);
         assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDE"));
     }
@@ -49,12 +47,8 @@ public class GraphCycleTest {
     @Test
     @DisplayName("graphCycle field should contain correct cycle when there are several Records with cycle")
     public void testCorrectCycleGraphFromSeveralRecords() {
-        Graph graph = new Graph(new HashMap<>(), new HashMap<>(), 3);
-        graph.createFromStream(Stream.of("ABCDE", "CDERTTT", "TTQWERY"));
-        graph = graph.optimizeGraph();
+        Graph graph = graph(3, Stream.of("ABCDE", "CDERTTT", "TTQWERY")).optimizeGraph();
         GraphCycle graphCycle = new GraphCycle(graph, 3);
-
         assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDERTTTQWERY"));
-
     }
 }

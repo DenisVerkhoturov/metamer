@@ -79,9 +79,9 @@ public class GraphCycle {
      * @return stream of strings equal with the first string length.
      */
     public Stream<String> findCycle() {
-        for (final Map.Entry<String, Node> entry : graph.getNodes().entrySet()) {
-            if (entry.getValue().nin == 0) {
-                final Node currentNode = entry.getValue();
+        for (final Node entry : graph.nodes()) {
+            if (entry.nin == 0) {
+                final Node currentNode = entry;
                 dfc(currentNode, "", graph.getNeighbors());
             }
         }

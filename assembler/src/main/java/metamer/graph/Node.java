@@ -54,8 +54,7 @@ public class Node {
             return false;
         }
         Node node = (Node)obj;
-        return Objects.equals(this.kmer, node.kmer) && Objects.equals(this.nin, node.nin) &&
-                Objects.equals(this.nout, node.nout);
+        return Objects.equals(this.kmer, node.kmer);
     }
 
     @Override

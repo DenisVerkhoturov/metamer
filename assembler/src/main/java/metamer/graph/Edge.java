@@ -48,9 +48,8 @@ public class Edge {
         if (this.getClass() != obj.getClass()) {
             return false;
         }
-        Node node = (Node)obj;
-        return Objects.equals(this.current.kmer, node.kmer) && Objects.equals(this.current.nin, node.nin) &&
-                Objects.equals(this.current.nout, node.nout);
+        Edge node = (Edge)obj;
+        return Objects.equals(this.current, node.current) && Objects.equals(this.next, node.next);
     }
 
     @Override
@@ -60,7 +59,7 @@ public class Edge {
 
     @Override
     public String toString() {
-        return this.current.kmer;
+        return this.kmer;
     }
 
 }
