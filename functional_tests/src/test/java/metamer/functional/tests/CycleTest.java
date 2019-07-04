@@ -25,14 +25,16 @@
 package metamer.functional.tests;
 
 import metamer.cmdparser.CliHandler;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static metamer.functional.tests.Utils.temporaryPath;
@@ -48,7 +50,7 @@ public class CycleTest {
             "У попа была собака, он её любил."
     );
 
-    @Disabled("Can't find node for start")
+    @DisabledOnOs(OS.WINDOWS)
     @Test
     @DisplayName("rhyme should be assemble correctly when ran")
     public void cycleRhymeTest() throws IOException {
@@ -56,8 +58,15 @@ public class CycleTest {
         Files.write(inputPath, ">id 0 test\n".getBytes());
         Files.write(inputPath, cycle.getBytes(), StandardOpenOption.APPEND);
         final Path outputPath = temporaryPath("out", "fasta");
+        final String expected = "У попа была собака, он её любил.Она съела кусок мяса, " +
+                "он её убил.В землю закапал, надпись написал:У попа была собака, он";
 
-        CliHandler.main("-k", "11", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(cycle));
+        CliHandler.main("-k", "7", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        final StringBuilder res = new StringBuilder();
+        List<String> list = Files.lines(outputPath).collect(toList());
+        for (final String s : list) {
+            res.append(s);
+        }
+        assertThat(res.toString(), containsString(expected));
     }
 }

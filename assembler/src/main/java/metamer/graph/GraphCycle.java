@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
+import static java.util.Comparator.comparingInt;
 
 /**
  * Class to find Euler's ways in de Bruijn graph.
@@ -74,17 +75,16 @@ public class GraphCycle {
     }
 
     /**
-     * Function for finding the first node without parent to start.
+     * Function for finding node with minimum nin.
      *
      * @return stream of strings equal with the first string length.
      */
     public Stream<String> findCycle() {
-        for (final Node entry : graph.nodes()) {
-            if (entry.nin == 0) {
-                final Node currentNode = entry;
-                dfc(currentNode, "", graph.getNeighbors());
-            }
-        }
+        graph
+                .nodes()
+                .stream()
+                .min(comparingInt(Node::nin))
+                .ifPresent(entryPoint -> dfc(entryPoint, "", graph.getNeighbors()));
         contigs.sort(comparing(String::length).reversed());
         return contigs.stream().filter(line -> line.length() == contigs.get(0).length());
     }
