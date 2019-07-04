@@ -31,6 +31,7 @@ import java.util.Objects;
  */
 public class Node {
     public String kmer;
+
     public int nin;
     public int nout;
 
@@ -43,6 +44,24 @@ public class Node {
         this.kmer = kmer;
         this.nin = 0;
         this.nout = 0;
+    }
+
+    /**
+     * Getter for Node.nin.
+     *
+     * @return this.nin.
+     */
+    public int nin() {
+        return nin;
+    }
+
+    /**
+     * Getter for Node.nout.
+     *
+     * @return this.nout.
+     */
+    public int nout() {
+        return nout;
     }
 
     @Override
