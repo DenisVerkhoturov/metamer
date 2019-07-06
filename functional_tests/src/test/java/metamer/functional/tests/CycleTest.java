@@ -27,8 +27,6 @@ package metamer.functional.tests;
 import metamer.cmdparser.CliHandler;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,7 +48,6 @@ public class CycleTest {
             "У попа была собака, он её любил."
     );
 
-    @DisabledOnOs(OS.WINDOWS)
     @Test
     @DisplayName("rhyme should be assemble correctly when ran")
     public void cycleRhymeTest() throws IOException {
