@@ -37,8 +37,8 @@ import static java.util.Comparator.comparingInt;
  */
 public class GraphCycle {
     private final Graph graph;
-    private int k;
-    private List<String> contigs;
+    private final int k;
+    private final List<String> contigs;
 
     /**
      * Constructor - initializing fields & paint all nodes into WHITE color.

@@ -24,11 +24,12 @@
  */
 package metamer.assembler;
 
+import lombok.Value;
+import lombok.experimental.Accessors;
 import metamer.fasta.Record;
 import metamer.graph.Graph;
 import metamer.graph.GraphCycle;
 
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -38,24 +39,12 @@ import static metamer.graph.Graph.graph;
 /**
  * Management tool for whole graph assembly cycle.
  */
+@Value
+@Accessors(fluent = true)
 public class Assembler {
     private final Stream<String> reads;
     private final Consumer<Stream<Record>> writer;
     private final int k;
-
-    /**
-     * Constructor - create new object with some values.
-     *
-     * @param reads  Stream of reads which were read from source
-     * @param writer Place where we are going to write results
-     * @param k Kmer length
-     */
-    public Assembler(final Stream<String> reads, final Consumer<Stream<Record>> writer, final int k) {
-        this.reads = reads;
-        this.writer = writer;
-        this.k = k;
-    }
-
 
     /**
      * Function for workflow control.
@@ -70,20 +59,4 @@ public class Assembler {
         });
         writer.accept(contigs);
     }
-
-    @Override
-    public boolean equals(final Object another) {
-        if (this == another) return true;
-        if (another == null || getClass() != another.getClass()) return false;
-
-        final Assembler that = (Assembler) another;
-
-        return this.k == that.k && this.reads == that.reads && this.writer == that.writer;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(k, reads, writer);
-    }
 }
-

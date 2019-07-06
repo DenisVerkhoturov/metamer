@@ -24,11 +24,17 @@
  */
 package metamer.graph;
 
-import java.util.Objects;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
 
 /**
  * Class - entity for nodes of de Bruijn graph.
  */
+@Data
+@Accessors(fluent = true)
+@EqualsAndHashCode(exclude = {"nin", "nout"})
 public class Node {
     public String kmer;
 
@@ -45,45 +51,4 @@ public class Node {
         this.nin = 0;
         this.nout = 0;
     }
-
-    /**
-     * Getter for Node.nin.
-     *
-     * @return this.nin.
-     */
-    public int nin() {
-        return nin;
     }
-
-    /**
-     * Getter for Node.nout.
-     *
-     * @return this.nout.
-     */
-    public int nout() {
-        return nout;
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (this.getClass() != obj.getClass()) {
-            return false;
-        }
-        Node node = (Node)obj;
-        return Objects.equals(this.kmer, node.kmer);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.kmer);
-    }
-
-    @Override
-    public String toString() {
-        return " Kmer = " + this.kmer + ", nout = " + this.nout + ", nin = " + this.nin + " ";
-    }
-
-}

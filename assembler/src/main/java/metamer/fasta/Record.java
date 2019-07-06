@@ -24,30 +24,23 @@
  */
 package metamer.fasta;
 
+
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.experimental.Accessors;
 import metamer.io.HasSequence;
 
-import java.util.Objects;
 
 /**
  * Class for forming fasta records.
  */
+@Value
+@RequiredArgsConstructor
+@Accessors(fluent = true)
 public class Record implements HasSequence {
     public final String uniqueIdentifier;
     public final String additionalInformation;
     public final String sequence;
-
-    /**
-     * Constructor - initializing fields.
-     *
-     * @param uniqueIdentifier      Unique identifier for current sequence.
-     * @param additionalInformation Additional information for current sequence.
-     * @param sequence              Current sequence.
-     */
-    public Record(final String uniqueIdentifier, final String additionalInformation, final String sequence) {
-        this.uniqueIdentifier = uniqueIdentifier;
-        this.additionalInformation = additionalInformation;
-        this.sequence = sequence;
-    }
 
     /**
      * Constructor - initializing fields & there is no additional information.
@@ -61,33 +54,5 @@ public class Record implements HasSequence {
     @Override
     public String sequence() {
         return sequence;
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Record record = (Record) o;
-        return Objects.equals(uniqueIdentifier, record.uniqueIdentifier) &&
-                Objects.equals(additionalInformation, record.additionalInformation) &&
-                Objects.equals(sequence, record.sequence);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(uniqueIdentifier, additionalInformation, sequence);
-    }
-
-    @Override
-    public String toString() {
-        return "Record{" +
-                "uniqueIdentifier='" + uniqueIdentifier + '\'' +
-                ", additionalInformation='" + additionalInformation + '\'' +
-                ", sequence='" + sequence + '\'' +
-                '}';
     }
 }
