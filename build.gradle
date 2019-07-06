@@ -6,6 +6,11 @@ plugins {
 }
 
 allprojects {
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
     buildscript {
         configurations.maybeCreate('pitest')
         dependencies {
@@ -44,6 +49,8 @@ allprojects {
             exceptionFormat = 'full'
             showStackTraces = false
         }
+
+        systemProperty "file.encoding", "utf-8"
     }
 
     checkstyle {
