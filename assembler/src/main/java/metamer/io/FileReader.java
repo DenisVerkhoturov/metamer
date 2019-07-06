@@ -39,20 +39,10 @@ import java.util.stream.Stream;
  *
  * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
  */
+@lombok.Value
 public class FileReader<T> implements Reader {
-    private Path path;
-    private Parser<T> parser;
-
-    /**
-     * Constructor - initializing all fields.
-     *
-     * @param path      Path to current file.
-     * @param parser    Type of parser for correct choice for record type.
-     */
-    public FileReader(final Path path, final Parser<T> parser) {
-        this.path = path;
-        this.parser = parser;
-    }
+    private final Path path;
+    private final Parser<T> parser;
 
     /**
      * Function for reading from file.

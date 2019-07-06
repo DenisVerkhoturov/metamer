@@ -24,6 +24,9 @@
  */
 package metamer.graph;
 
+import lombok.Value;
+import lombok.experimental.Accessors;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -40,24 +43,13 @@ import static metamer.utils.Strings.windows;
 /**
  * Class for building & optimizing de Bruijn graph.
  */
+@Value
+@Accessors(fluent = true)
 public class Graph {
 
-    private Map<Node, List<Node>> neighbors;
-    private Map<String, Node> nodes;
-    private int k;
-
-    /**
-     * Constructor - initialize fields.
-     *
-     * @param neighbors Map consist of nodes and list of nodes connected with this one.
-     * @param nodes     Map consist of kmer strings and nodes responsible for this kmer.
-     * @param k         Length of kmer.
-     */
-    public Graph(final Map<Node, List<Node>> neighbors, final Map<String, Node> nodes, final int k) {
-        this.neighbors = neighbors;
-        this.nodes = nodes;
-        this.k = k;
-    }
+    private final Map<Node, List<Node>> neighbors;
+    private final  Map<String, Node> nodes;
+    private final int k;
 
     private void createNodesMap(final String str) {
         this.nodes.computeIfAbsent(str.substring(0, k - 1), Node::new);
@@ -124,7 +116,7 @@ public class Graph {
                 neighborsOptimized.remove(tmp);
                 nodesOptimized.remove(tmp.kmer);
                 used.add(last.kmer);
-                newKmer += last.kmer.substring(k - 2);
+                newKmer += last.kmer.substring(k - 2); //TODO replace String with StringBuilder
             }
 
             if (newKmer.equals(first.kmer)) {

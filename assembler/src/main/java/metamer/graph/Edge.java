@@ -25,8 +25,13 @@
 
 package metamer.graph;
 
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+//TODO add documentation
+
+@ToString(exclude = {"current", "next", "isVisited"})
+@EqualsAndHashCode(exclude = {"isVisited", "kmer"})
 public class Edge {
     public Node current;
     public Node next;
@@ -39,27 +44,4 @@ public class Edge {
         this.isVisited = false;
         this.kmer = curr.kmer.substring(0, curr.kmer.length() - (k - 2)) + next.kmer;
     }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (this.getClass() != obj.getClass()) {
-            return false;
-        }
-        Edge node = (Edge)obj;
-        return Objects.equals(this.current, node.current) && Objects.equals(this.next, node.next);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.current.kmer);
-    }
-
-    @Override
-    public String toString() {
-        return this.kmer;
-    }
-
 }

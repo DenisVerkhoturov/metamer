@@ -24,6 +24,9 @@
  */
 package metamer.io;
 
+import lombok.Value;
+import lombok.experimental.Accessors;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -35,20 +38,11 @@ import java.util.stream.Stream;
  *
  * @param <T> Type of Record: {@link metamer.fasta.Record} or {@link metamer.fastq.Record}.
  */
+@Value
+@Accessors(fluent = true)
 public class FileWriter<T> implements Writer<T> {
-    private Path path;
-    private Parser<T> parser;
-
-    /**
-     * Constructor - initializing all fields.
-     *
-     * @param path      Path to current file.
-     * @param parser    Type of parser for correct choice for record type.
-     */
-    public FileWriter(final Path path, final Parser<T> parser) {
-        this.path = path;
-        this.parser = parser;
-    }
+    private final Path path;
+    private final Parser<T> parser;
 
     /**
      * Write result of workflow process into file.
