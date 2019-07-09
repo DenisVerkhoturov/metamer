@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration monitorInterval="3">
+    <appenders>
+        <RollingRandomAccessFile name="RFILE" fileName="${sys:java.io.tmpdir}/logInf.log"
+                                 append="true" filePattern="${sys:java.io.tmpdir}/metamer-logInf-%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="%d{ISO8601} [%-5p] (%F:%L) - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1000" modulate="false"/>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+        </RollingRandomAccessFile>
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{ABSOLUTE} [%-5p] (%F:%L) - %m%n"/>
+        </Console>
+    </appenders>
+    <loggers>
+        <root level="all">
+            <AppenderRef ref="RFILE"/>
+        </root>
+    </loggers>
+
+</configuration>

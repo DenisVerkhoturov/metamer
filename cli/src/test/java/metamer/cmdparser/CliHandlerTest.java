@@ -49,8 +49,9 @@ import java.util.List;
 import java.nio.file.Paths;
 
 import static io.vavr.control.Validation.invalid;
-import static metamer.utils.CliHandlerUtils.temporaryDirectory;
 import static metamer.utils.CliHandlerUtils.temporaryFile;
+import static metamer.utils.CliHandlerUtils.temporaryPath;
+import static metamer.utils.CliHandlerUtils.temporaryDirectory;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -89,7 +90,6 @@ class CliHandlerTest {
     @DisplayName("parse exception should be thrown when there is no argument after key -k")
     public void nullLengthTest() {
         String[] args = new String[] {"-k", "-f", "fasta"};
-
         Throwable thrown = assertThrows(ParseException.class, () -> CliHandler.parse(args));
         assertNotNull(thrown.getMessage());
     }
@@ -183,5 +183,16 @@ class CliHandlerTest {
         final String outputPath = inaccessibleDirectory.resolve("out.fasta").toString();
         final Validation<Exception, Path> verdict = CliHandler.validateOutputPath(outputPath);
         assertThat(verdict, is(invalid(new FileIsNotWritable(Paths.get(outputPath)))));
+    }
+
+    @Test
+    @DisplayName("just test")
+    public void test() throws IOException {
+        final Path inputPath = temporaryFile("inp", ".fasta");
+        Files.write(inputPath, "AAABBT".getBytes());
+
+        final Path outputPath = temporaryPath("out", ".fasta");
+        CliHandler.main("-k", "4", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString(), "-v");
+        assertThat(outputPath, is(outputPath));
     }
 }
