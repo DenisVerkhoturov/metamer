@@ -75,12 +75,13 @@ public class FunctionalTest {
     private final OutputStream testOut = new ByteArrayOutputStream();
     private final String newLine = System.lineSeparator();
     private final String usage = multiline(
-            "usage: java metamer.jar [-f <arg>] [-h] [-i <arg>] [-k <arg>] [-o <arg>]",
+            "usage: java metamer.jar [-f <arg>] [-h] [-i <arg>] [-k <arg>] [-o <arg>] [-v]",
             "   -f,--format <arg>     Format of input data: fasta or fastq",
             "   -h,--help             Present help",
             "   -i,--input <arg>      Input file with reads to be analyzed",
             "   -k <arg>              Length of k mer in De Bruijn graph",
             "   -o,--output <arg>     Output file to write result to",
+            "   -v,--verbose          Present log info",
             "--- HELP ---" + newLine);
     private final String content = multiline(
             ">id0 test",

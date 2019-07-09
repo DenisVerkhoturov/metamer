@@ -48,11 +48,14 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 
 import java.io.File;
-import java.io.PrintWriter;
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -76,35 +79,55 @@ import metamer.cmdparser.exception.FileIsNotWritable;
 import metamer.cmdparser.exception.FileIsNotReadable;
 import metamer.cmdparser.exception.FileAlreadyExists;
 import metamer.cmdparser.exception.InvalidLength;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Implementation of command line arguments parsing.
  */
 public class CliHandler {
 
+    private static boolean verbose = false;
+    private static final Logger log = LogManager.getLogger(CliHandler.class.getName());
+    private static final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+    private static final String logName = "metamer-" + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + ".log";
+
     private static Options options = new Options()
             .addOption("h", "help", false, "Present help")
             .addOption("k", true, "Length of k mer in De Bruijn graph")
             .addOption("f", "format", true, "Format of input data: fasta or fastq")
             .addOption("i", "input", true, "Input file with reads to be analyzed")
-            .addOption("o", "output", true, "Output file to write result to");
+            .addOption("o", "output", true, "Output file to write result to")
+            .addOption("v", "verbose", false, "Present log info");
 
     public static void main(final String... args) {
         try {
+            log.info("START");
             Match(parse(args)).of(
                     Case($Left($()), messages -> run(() -> messages.forEach(System.out::println))),
                     Case($Right($()), API::run)
             );
-        } catch (final ParseException exp) {
-            System.out.println(exp.getMessage());
+            final File logF = new File(tmpDir, "logInf.log");
+            logF.renameTo(new File(tmpDir, logName));
+            if (verbose) {
+                System.out.println(showLog());
+            }
+        } catch (final Exception exp) {
+            log.error("ParseException in Main 108" + exp.getMessage(), exp);
+            final File userDir = new File(System.getProperty("user.dir"));
+            final File logF = new File(tmpDir, logName);
+            try {
+                Files.copy(logF.toPath(), userDir.toPath());
+            } catch (final IOException io) {
+                log.error("IOException in CliHandler, Main" + io.getMessage(), io);
+            }
         }
     }
 
     /**
      * Control function to select correct scenario.
      *
-     * Possible scenarios:
-     * 1. Reading from file & writing to file
+     * Possible scenarios:     * 1. Reading from file & writing to file
      * 2. Reading from file & writing to stdout
      * 3. Reading from stdin & writing to file
      * 4. Reading from stdin & writing to stdout.
@@ -122,17 +145,27 @@ public class CliHandler {
         }
 
         final String k = line.getOptionValue("k");
+        log.info("k value = " + k);
         final String format = line.getOptionValue("format");
+        log.info("format value = " + format);
         final Validation<Seq<Exception>, Assembler> validation;
         if (line.hasOption("input") && line.hasOption("output")) {
             validation = validateFromFileToFile(
                     line.getOptionValue("input"), line.getOptionValue("output"), k, format);
+            log.info("strategy : from file to file, input = " + line.getOptionValue("input")
+                    + ", output = " + line.getOptionValue("output"));
         } else if (line.hasOption("input")) {
             validation = validateFromFileToStd(line.getOptionValue("input"), k, format);
+            log.info("strategy : from file to stdout, input = " + line.getOptionValue("input"));
         } else if (line.hasOption("output")) {
             validation = validateFromStdToFile(line.getOptionValue("output"), k, format);
+            log.info("strategy : from stdin to file, output = " + line.getOptionValue("output"));
         } else {
             validation = validateFromStdToStd(k, format);
+            log.info("strategy : from stdin to stdout");
+        }
+        if (line.hasOption("verbose")) {
+            verbose = true;
         }
 
         return validation.toEither().map(assembler -> assembler::assemble);
@@ -160,6 +193,7 @@ public class CliHandler {
         ).ap((source, target, k, format) -> {
             final Stream<String> reads = new FileReader<>(source, format.parser).read().map(HasSequence::sequence);
             final Writer<Record> writer = new FileWriter<>(target, Fasta.parser());
+            log.info("Start validation from file to file");
             return new Assembler(reads, writer::write, k);
         });
     }
@@ -184,6 +218,7 @@ public class CliHandler {
         ).ap((source, k, format) -> {
             final Stream<String> reads = new FileReader<>(source, format.parser).read().map(HasSequence::sequence);
             final Writer<Record> writer = new StdOutWriter<>(Fasta.parser());
+            log.info("Start validation from file to stdout");
             return new Assembler(reads, writer::write, k);
         });
     }
@@ -207,6 +242,7 @@ public class CliHandler {
         ).ap((target, k, format) -> {
             final Stream<String> reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
             final Writer<Record> writer = new FileWriter<>(target, Fasta.parser());
+            log.info("Start validation from stdin to file");
             return new Assembler(reads, writer::write, k);
         });
     }
@@ -224,6 +260,7 @@ public class CliHandler {
         return combine(validateK(kValue), validateFormat(formatValue)).ap((k, format) -> {
             final Stream<String> reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
             final Writer<Record> writer = new StdOutWriter<>(Fasta.parser());
+            log.info("Start validation from stdin to stdout");
             return new Assembler(reads, writer::write, k);
         });
     }
@@ -295,6 +332,11 @@ public class CliHandler {
         final HelpFormatter helpFormatter = new HelpFormatter();
         helpFormatter.printHelp(writer, 80, commandLineSyntax, null, options, 3, 5, "--- HELP ---", true);
         return stringWriter.toString();
+    }
+
+    private static String showLog() throws IOException {
+        final File file = new File(tmpDir, logName);
+        return Files.readString(Paths.get(file.getAbsolutePath()));
     }
 
     enum Format {
