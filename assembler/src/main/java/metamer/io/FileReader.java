@@ -58,6 +58,7 @@ public class FileReader<T> implements Reader {
         }
     }
 
+
     /**
      * Get path to file.
      *
@@ -69,7 +70,7 @@ public class FileReader<T> implements Reader {
 
     /**
      * Get current parser.
-     *
+     * <p>
      * Parser may be one of {@link metamer.fasta.Fasta} of {@link metamer.fastq.FastQ}
      *
      * @return Parser.
@@ -86,4 +87,5 @@ public class FileReader<T> implements Reader {
     public String id() {
         return this.path.toString();
     }
+
 }
