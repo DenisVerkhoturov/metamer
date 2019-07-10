@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static metamer.utils.Strings.windows;
 
 /**
@@ -48,8 +47,9 @@ import static metamer.utils.Strings.windows;
 public class Graph {
 
     private final Map<Node, List<Node>> neighbors;
-    private final  Map<String, Node> nodes;
+    private final Map<String, Node> nodes;
     private final int k;
+    private Set<Edge> edges;
 
     private void createNodesMap(final String str) {
         this.nodes.computeIfAbsent(str.substring(0, k - 1), Node::new);
@@ -74,8 +74,14 @@ public class Graph {
      *
      * @return Hashmap of neighbours.
      */
-    public Map<Node, List<Node>> getNeighbors() {
-        return new HashMap<>(this.neighbors);
+    public List<Edge> getNeighbors(final Node node) {
+        List<Edge> list = new ArrayList<>();
+        for (final Edge edge : edges) {
+            if (edge.current.equals(node)) {
+                list.add(edge);
+            }
+        }
+        return list;
     }
 
     /**
@@ -84,14 +90,15 @@ public class Graph {
      * @return HashSet of edges.
      */
     public Set<Edge> edges() {
-        return neighbors.entrySet().stream()
-                .flatMap(e -> e.getValue().stream().map(n -> new Edge(e.getKey(), n, k)))
-                .collect(toSet());
+//        return neighbors.entrySet().stream()
+//                .flatMap(e -> e.getValue().stream().map(n -> new Edge(e.getKey(), n, k)))
+//                .collect(toSet());
+        return new HashSet<>(this.edges);
     }
 
     /**
      * Function for optimizing our graph.
-     * <p>
+     *
      * Here we make one edge from several edges which can be connected only in one way.
      *
      * @return Optimized version of our graph.
@@ -99,6 +106,7 @@ public class Graph {
     public Graph optimizeGraph() {
         Map<String, Node> nodesOptimized = new HashMap<>();
         Map<Node, List<Node>> neighborsOptimized = neighbors;
+        Set<Edge> edgesOptimized = edges;
         Set<String> used = new HashSet<>();
 
         for (final Map.Entry<String, Node> entry : nodes.entrySet()) {
@@ -140,7 +148,7 @@ public class Graph {
             }
         }
 
-        return new Graph(neighborsOptimized, nodesOptimized, k);
+        return new Graph(neighborsOptimized, nodesOptimized, k, edgesOptimized);
     }
 
     /**
@@ -151,7 +159,8 @@ public class Graph {
     public static Graph graph(final int k, final Stream<String> stream) {
         final Map<String, Node> nodes = new HashMap<>();
         final Map<Node, List<Node>> neighbors = new HashMap<>();
-        final Graph graph = new Graph(neighbors, nodes, k);
+        final Set<Edge> edges = new HashSet<>();
+        final Graph graph = new Graph(neighbors, nodes, k, edges);
         stream.forEach(graph::makeNodes);
         for (final Map.Entry<String, Node> entry : nodes.entrySet()) {
             for (final Map.Entry<String, Node> entry2 : nodes.entrySet()) {
@@ -163,11 +172,12 @@ public class Graph {
                     list.add(entry2.getValue());
                     entry.getValue().nout++;
                     entry2.getValue().nin++;
+                    edges.add(new Edge(entry.getValue(), entry2.getValue(), k));
                 }
                 neighbors.put(entry.getValue(), list);
             }
         }
-        return new Graph(neighbors, nodes, k);
+        return new Graph(neighbors, nodes, k, edges);
     }
 
     /**
@@ -181,6 +191,7 @@ public class Graph {
     public static Graph graph(final int k, final Map.Entry<Node, Node>... edges) {
         final Map<String, Node> nodes = new HashMap<>();
         final Map<Node, List<Node>> neighbors = new HashMap<>();
+        final Set<Edge> edgeSet = new HashSet<>();
         for (final Map.Entry<Node, Node> edge : edges) {
             final Node left = edge.getKey();
             final Node right = edge.getValue();
@@ -192,8 +203,9 @@ public class Graph {
                     (o, n) -> Stream.concat(o.stream(), n.stream()).collect(toList()));
             neighbors.merge(nodes.get(right.kmer), new ArrayList<>(),
                     (o, n) -> Stream.concat(o.stream(), n.stream()).collect(toList()));
+            edgeSet.add(new Edge(left, right, k));
         }
-        return new Graph(neighbors, nodes, k);
+        return new Graph(neighbors, nodes, k, edgeSet);
     }
 }
 

@@ -26,7 +26,6 @@ package metamer.graph;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
@@ -44,7 +43,7 @@ public class GraphCycle {
      * Constructor - initializing fields & paint all nodes into WHITE color.
      *
      * @param graph Pptimized version of graph from previous stages.
-     * @param k Length of kmer.
+     * @param k     Length of kmer.
      */
     public GraphCycle(final Graph graph, final int k) {
         this.graph = graph;
@@ -56,18 +55,22 @@ public class GraphCycle {
      * Realization of finding Eiler's path.
      *
      * @param currentNode Node with start position, tree root.
-     * @param str current version of result string.
-     * @param map map with node and all his neighbours.
+     * @param str         current version of result string.
+     * @param map         map with node and all his neighbours.
      */
-    private void dfc(final Node currentNode, final String str, final Map<Node, List<Node>> map) {
-        final List<Node> relatedNodes = new ArrayList<>(map.get(currentNode));
+    private void dfc(final Node currentNode, final String str, final List<Edge> edges) {
+        List<Edge> relatedNodes = new ArrayList<>();
+        for (final Edge edge : edges) {
+            if (edge.current.equals(currentNode)) {
+                relatedNodes.add(edge);
+            }
+        }
 
         if (relatedNodes.size() != 0) {
-            for (final Node node : relatedNodes) {
-                map.get(currentNode).remove(node);
-                dfc(node, str + currentNode.kmer.substring(0, currentNode.kmer.length() - (k - 2)), map);
-                map.get(currentNode).clear();
-                map.get(currentNode).addAll(relatedNodes);
+            for (final Edge edge : relatedNodes) {
+                edges.remove(edge);
+                dfc(edge.next, str + currentNode.kmer.substring(0, currentNode.kmer.length() - (k - 2)), edges);
+                edges.add(edge);
             }
         } else {
             contigs.add(str + currentNode.kmer);
@@ -84,7 +87,7 @@ public class GraphCycle {
                 .nodes()
                 .stream()
                 .min(comparingInt(Node::nin))
-                .ifPresent(entryPoint -> dfc(entryPoint, "", graph.getNeighbors()));
+                .ifPresent(entryPoint -> dfc(entryPoint, "", new ArrayList<>(graph.edges())));
         contigs.sort(comparing(String::length).reversed());
         return contigs.stream().filter(line -> line.length() == contigs.get(0).length());
     }

@@ -87,7 +87,7 @@ public class SequentialTest {
                 + "Или, стаканами владея,"
                 + "Лафит с цымлянским различить!";
 
-        CliHandler.main("-k", "11", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        CliHandler.main("-k", "18", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         StringBuilder res = new StringBuilder();
         List<String> list = Files.lines(outputPath).collect(toList());
         for (final String s : list) {

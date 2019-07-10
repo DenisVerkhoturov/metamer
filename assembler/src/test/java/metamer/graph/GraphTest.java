@@ -29,17 +29,14 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static metamer.graph.Graph.graph;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-
+import static org.hamcrest.Matchers.not;
 
 
 class GraphTest {
@@ -67,9 +64,9 @@ class GraphTest {
                 Map.entry(new Node("GC"), new Node("CA"))
         );
         Graph optGr = gr.optimizeGraph();
-        assertThat(optGr.nodes(), containsInAnyOrder(
+        assertThat(gr.nodes(), containsInAnyOrder(
                 new Node("AT"), new Node("TG"), new Node("GC"),
-                new Node("GG"), new Node("CGT"), new Node("CA")
+                new Node("GG"), new Node("CG"), new Node("GT"), new Node("CA")
         ));
     }
 
@@ -78,15 +75,6 @@ class GraphTest {
     public void testIfNodeNotPresent() {
         Graph gr = graph(3, Stream.of("AAA", "TTT"));
         assertThat(gr.nodes(), not(contains(new Node("AT"))));
-    }
-
-    @Test
-    @DisplayName("node should have information about all neighbors when graph created")
-    public void testIfEdgeContainsAllNodes() {
-        Graph gr = graph(3, Stream.of("AARAT", "AAT"));
-        Node tmp = new Node("AA");
-        assertThat(gr.getNeighbors().get(gr.nodes().stream()
-                .filter(data -> Objects.equals(data, tmp)).findFirst().get()), hasSize(3));
     }
 
     @Test
@@ -101,12 +89,16 @@ class GraphTest {
     @Test
     @DisplayName("graph should contain all edges when method called")
     public void testIfAllEdgesPresent() {
-        Graph gr = graph(3, Stream.of("ARAT"));
-        Set<Edge> edges = gr.edges();
+        Graph gr = graph(3, Stream.of("ARAT", "TAB"));
         assertThat(gr.edges(), containsInAnyOrder(
                 new Edge(new Node("AR"), new Node("RA"), 3),
                 new Edge(new Node("RA"), new Node("AT"), 3),
-                new Edge(new Node("RA"), new Node("AR"), 3)
+                new Edge(new Node("RA"), new Node("AR"), 3),
+                new Edge(new Node("RA"), new Node("AB"), 3),
+                new Edge(new Node("TA"), new Node("AT"), 3),
+                new Edge(new Node("TA"), new Node("AR"), 3),
+                new Edge(new Node("TA"), new Node("AB"), 3),
+                new Edge(new Node("AT"), new Node("TA"), 3)
         ));
     }
 }

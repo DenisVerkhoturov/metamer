@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 import static metamer.functional.tests.Utils.temporaryPath;
@@ -114,13 +115,18 @@ public class RepetitionTest {
         Files.write(inputPath, rhyme.getBytes(), StandardOpenOption.APPEND);
         final Path outputPath = temporaryPath("out", "fasta");
 
-        final String expected2 = "START I know an old lady who swallowed a cowI don't know how she swallowed the s,"
-                + " pider to catch the spiderThat wriggled and jiggled and tickled inside herShe swa, llowed that "
-                + "flyPerhaps she'll dieI know an old lady who swallowed a goatOpened h, er throat and down went the "
-                + "goat!She swallowed a flyI don't know why she swallow, ed a spiderThat wriggled"
-                + " and jiggled and tickled inside herShe swallowed";
+        final String expected2 = "START I know an old lady who swallowed a cowI don't know how she swallowed the cow" +
+                "She swallowed the cow to catch the goatShe swallowed the goat to catch the dogShe swallowed the dog" +
+                " to catch the catShe swallowed the cat to catch the birdShe swallowed the bird to catch the spider" +
+                "That wriggled and jiggled and tickled inside herShe swallowed the spider to catch the flyBut I " +
+                "don't know why she swallowed that flyPerhaps she'll dieI know an old lady w";
 
-        CliHandler.main("-k", "15", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        assertThat(Files.lines(outputPath).collect(toList()).toString(), containsString(expected2));
+        CliHandler.main("-k", "21", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        StringBuilder res = new StringBuilder();
+        List<String> list = Files.lines(outputPath).collect(toList());
+        for (final String s : list) {
+            res.append(s);
+        }
+        assertThat(res.toString(), containsString(expected2));
     }
 }
