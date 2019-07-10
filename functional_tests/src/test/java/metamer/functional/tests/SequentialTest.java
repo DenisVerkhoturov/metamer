@@ -88,11 +88,11 @@ public class SequentialTest {
                 + "Лафит с цымлянским различить!";
 
         CliHandler.main("-k", "11", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
-        String res = "";
+        StringBuilder res = new StringBuilder();
         List<String> list = Files.lines(outputPath).collect(toList());
         for (final String s : list) {
-            res += s;
+            res.append(s);
         }
-        assertThat(res, is(expected));
+        assertThat(res.toString(), is(expected));
     }
 }
