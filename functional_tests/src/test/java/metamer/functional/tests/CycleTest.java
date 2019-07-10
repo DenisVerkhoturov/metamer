@@ -56,9 +56,9 @@ public class CycleTest {
         Files.write(inputPath, cycle.getBytes(), StandardOpenOption.APPEND);
         final Path outputPath = temporaryPath("out", "fasta");
         final String expected = "У попа была собака, он её любил.Она съела кусок мяса, " +
-                "он её убил.В землю закапал, надпись написал:У попа была собака, он";
+                "он её убил.В землю закапал, надпись написал:У попа был";
 
-        CliHandler.main("-k", "7", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
+        CliHandler.main("-k", "11", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
         final StringBuilder res = new StringBuilder();
         List<String> list = Files.lines(outputPath).collect(toList());
         for (final String s : list) {

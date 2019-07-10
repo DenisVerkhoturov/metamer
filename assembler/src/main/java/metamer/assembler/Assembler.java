@@ -51,7 +51,7 @@ public class Assembler {
      */
     public void assemble() {
         final Graph graph = graph(k, reads);
-        final GraphCycle graphCycle = new GraphCycle(graph.optimizeGraph(), k);
+        final GraphCycle graphCycle = new GraphCycle(graph, k);
         final AtomicInteger counter = new AtomicInteger();
         final Stream<Record> contigs = graphCycle.findCycle().map(e -> {
             counter.getAndIncrement();

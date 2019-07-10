@@ -39,7 +39,7 @@ public class GraphCycleTest {
     @Test
     @DisplayName("graphCycle field should contain correct cycle when there is cycle in graph")
     public void testCorrectCycleGraph() {
-        Graph graph = graph(3, Stream.of("ABCDE")).optimizeGraph();
+        Graph graph = graph(3, Stream.of("ABCDE"));
         GraphCycle graphCycle = new GraphCycle(graph, 3);
         assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDE"));
     }
@@ -47,7 +47,7 @@ public class GraphCycleTest {
     @Test
     @DisplayName("graphCycle field should contain correct cycle when there are several Records with cycle")
     public void testCorrectCycleGraphFromSeveralRecords() {
-        Graph graph = graph(3, Stream.of("ABCDE", "CDERTTT", "TTQWERY")).optimizeGraph();
+        Graph graph = graph(3, Stream.of("ABCDE", "CDERTTT", "TTQWERY"));
         GraphCycle graphCycle = new GraphCycle(graph, 3);
         assertThat(graphCycle.findCycle().collect(toList()), contains("ABCDERTTTQWERY"));
     }

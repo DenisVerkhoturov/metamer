@@ -30,18 +30,17 @@ import lombok.ToString;
 
 //TODO add documentation
 
-@ToString(exclude = {"current", "next", "isVisited"})
-@EqualsAndHashCode(exclude = {"isVisited", "kmer"})
+@ToString(exclude = {"current", "next"})
+@EqualsAndHashCode(exclude = {"kmer"})
 public class Edge {
     public Node current;
     public Node next;
-    public boolean isVisited;
     public String kmer;
 
     Edge(final Node curr, final Node next, final int k) {
         this.current = curr;
         this.next = next;
-        this.isVisited = false;
         this.kmer = curr.kmer.substring(0, curr.kmer.length() - (k - 2)) + next.kmer;
     }
+
 }

@@ -269,7 +269,7 @@ public class FunctionalTest {
         final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected1 = ">seq1";
-        final String expected2 = "ATGGCGTGCGTGGCD";
+        final String expected2 = "ATGGCGTGCD";
 
         CliHandler.main("-k", "4", "-format", "fasta", "-i", inputPath.toString(), "-o", outputPath.toString());
 
@@ -284,7 +284,7 @@ public class FunctionalTest {
         Files.write(inputPath, content.getBytes());
 
         final String expected1 = ">seq";
-        final String expected2 = "ATGGCGTGCGTGGCD";
+        final String expected2 = "ATGGCGTGCD";
 
         CliHandler.main("-k", "4", "-format", "fasta", "-i", inputPath.toString());
         assertThat(testOut.toString(), containsString(expected1));
@@ -297,7 +297,7 @@ public class FunctionalTest {
         final Path outputPath = temporaryPath("out", ".fasta");
 
         final String expected1 = ">seq";
-        final String expected2 = "ATGGCGTGCGTGGCD";
+        final String expected2 = "ATGGCGTGCD";
 
         CliHandler.main("-k", "4", "-format", "fasta", "-o", outputPath.toString());
         assertThat(outputPath.toFile(), anExistingFile());
@@ -308,7 +308,7 @@ public class FunctionalTest {
     @DisplayName("stdin should be source & stdout should contain result when there is no input & output files")
     public void readingFromStdinWriteInStdoutTest() {
         final String expected1 = ">seq";
-        final String expected2 = "ATGGCGTGCGTGGCD";
+        final String expected2 = "ATGGCGTGCD";
 
         CliHandler.main("-k", "4", "-format", "fasta");
         assertThat(testOut.toString(), containsString(expected1));
