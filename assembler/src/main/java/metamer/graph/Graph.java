@@ -107,7 +107,7 @@ public class Graph {
                 continue;
             }
             used.add(first.kmer);
-            String newKmer = first.kmer;
+            StringBuilder newKmer = new StringBuilder(first.kmer);
             Node last = first;
             while ((last.nout == 1) && (neighborsOptimized.get(last).get(0).nin == 1) &&
                     (neighborsOptimized.get(last).get(0) != first)) {
@@ -116,18 +116,18 @@ public class Graph {
                 neighborsOptimized.remove(tmp);
                 nodesOptimized.remove(tmp.kmer);
                 used.add(last.kmer);
-                newKmer += last.kmer.substring(k - 2); //TODO replace String with StringBuilder
+                newKmer.append(last.kmer.substring(k - 2));
             }
 
-            if (newKmer.equals(first.kmer)) {
+            if (newKmer.toString().equals(first.kmer)) {
                 nodesOptimized.put(first.kmer, first);
                 continue;
             }
 
-            Node node = new Node(newKmer);
+            Node node = new Node(newKmer.toString());
             node.nin = first.nin;
             node.nout = last.nout;
-            nodesOptimized.put(newKmer, node);
+            nodesOptimized.put(newKmer.toString(), node);
 
             neighborsOptimized.put(node, neighborsOptimized.get(last));
             neighborsOptimized.remove(last);
