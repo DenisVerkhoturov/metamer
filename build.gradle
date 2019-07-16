@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'info.solidsoft.pitest' version '1.4.0'
-    id "me.champeau.gradle.jmh" version "0.4.8"
+    id "me.champeau.gradle.jmh" version "0.4.8" apply false
 }
 
 allprojects {
@@ -107,7 +107,7 @@ project('benchmark') {
     apply plugin: "me.champeau.gradle.jmh"
 
     dependencies {
-        jmh 'org.openjdk.jmh:jmh-core:1.19'
-        jmh 'org.openjdk.jmh:jmh-generator-annprocess:1.19'
+        compile 'org.openjdk.jmh:jmh-core:1.19'
+        compile 'org.openjdk.jmh:jmh-generator-annprocess:1.19'
     }
 }
