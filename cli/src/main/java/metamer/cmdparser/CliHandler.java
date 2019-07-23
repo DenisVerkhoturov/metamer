@@ -339,7 +339,7 @@ public class CliHandler {
         return Files.readString(Paths.get(file.getAbsolutePath()));
     }
 
-    enum Format {
+    public enum Format {
         FASTA(Fasta.parser()), FASTQ(FastQ.parser());
 
         public final Parser<? extends HasSequence> parser;
