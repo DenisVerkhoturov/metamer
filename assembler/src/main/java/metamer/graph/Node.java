@@ -46,7 +46,7 @@ public class Node {
      *
      * @param kmer String with current kmer.
      */
-    Node(final String kmer) {
+    public Node(final String kmer) {
         this.kmer = kmer;
         this.nin = 0;
         this.nout = 0;
