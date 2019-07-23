@@ -30,12 +30,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,6 +47,7 @@ import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclEntryType;
 import java.nio.file.attribute.AclEntryPermission;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.zip.GZIPOutputStream;
 
 import io.vavr.collection.Seq;
 import io.vavr.collection.List;
@@ -75,7 +78,9 @@ public class FunctionalTest {
     private final OutputStream testOut = new ByteArrayOutputStream();
     private final String newLine = System.lineSeparator();
     private final String usage = multiline(
-            "usage: java metamer.jar [-f <arg>] [-h] [-i <arg>] [-k <arg>] [-o <arg>] [-v]",
+            "usage: java metamer.jar [-c] [-f <arg>] [-h] [-i <arg>] [-k <arg>] [-o <arg>]",
+            "       [-v]",
+            "   -c,--compressed       Archive using",
             "   -f,--format <arg>     Format of input data: fasta or fastq",
             "   -h,--help             Present help",
             "   -i,--input <arg>      Input file with reads to be analyzed",
@@ -113,6 +118,34 @@ public class FunctionalTest {
             path.toFile().setWritable(false);
         }
         return path;
+    }
+
+    private String gzData() throws IOException {
+        final Path inputPath = temporaryFile("inp", ".fasta");
+        Files.write(inputPath, content.getBytes());
+        FileInputStream fis = new FileInputStream(inputPath.toString());
+        FileOutputStream fos = new FileOutputStream(inputPath.toString() + ".gz");
+        GZIPOutputStream gxo = new GZIPOutputStream(fos);
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = fis.read(buf)) != -1) {
+            gxo.write(buf, 0, len);
+        }
+
+        gxo.close();
+        fos.close();
+        fis.close();
+
+        return inputPath.toString() + ".gz";
+    }
+
+    private byte[] gzDataStd() throws IOException {
+        try (final ByteArrayOutputStream obj = new ByteArrayOutputStream();
+                final GZIPOutputStream gzip = new GZIPOutputStream(obj)) {
+            gzip.write(content.getBytes());
+            gzip.finish();
+            return obj.toByteArray();
+        }
     }
 
     @BeforeEach
@@ -311,6 +344,32 @@ public class FunctionalTest {
         final String expected2 = "ATGGCGTGCD";
 
         CliHandler.main("-k", "4", "-format", "fasta");
+        assertThat(testOut.toString(), containsString(expected1));
+        assertThat(testOut.toString(), containsString(expected2));
+    }
+
+    @Test
+    @DisplayName("program should work when read from gzip file")
+    public void readingFromGzipFiles() throws IOException {
+
+        CliHandler.main("-k", "4", "-format", "fasta", "-i", gzData(), "-c");
+
+        final String expected1 = ">seq1";
+        final String expected2 = "ATGGCGTGCGTGGCD";
+
+        assertThat(testOut.toString(), containsString(expected1));
+        assertThat(testOut.toString(), containsString(expected2));
+    }
+
+    @Test
+    @DisplayName("program should work when read from gzip stdIn")
+    public void readingFromGZIPStdIn() throws IOException {
+        System.setIn(new ByteArrayInputStream(gzDataStd()));
+
+        final String expected1 = ">seq";
+        final String expected2 = "ATGGCGTGCGTGGCD";
+
+        CliHandler.main("-k", "4", "-format", "fasta", "-c");
         assertThat(testOut.toString(), containsString(expected1));
         assertThat(testOut.toString(), containsString(expected2));
     }

@@ -33,13 +33,15 @@ import metamer.assembler.Assembler;
 import metamer.fasta.Fasta;
 import metamer.fasta.Record;
 import metamer.fastq.FastQ;
+import metamer.io.DecoratorGZIP;
 import metamer.io.FileReader;
-import metamer.io.FileWriter;
 import metamer.io.HasSequence;
-import metamer.io.Parser;
-import metamer.io.StdInReader;
-import metamer.io.StdOutWriter;
 import metamer.io.Writer;
+import metamer.io.FileWriter;
+import metamer.io.DecoratorGZIPStd;
+import metamer.io.StdOutWriter;
+import metamer.io.StdInReader;
+import metamer.io.Parser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.CommandLineParser;
@@ -98,7 +100,8 @@ public class CliHandler {
             .addOption("f", "format", true, "Format of input data: fasta or fastq")
             .addOption("i", "input", true, "Input file with reads to be analyzed")
             .addOption("o", "output", true, "Output file to write result to")
-            .addOption("v", "verbose", false, "Present log info");
+            .addOption("v", "verbose", false, "Present log info")
+            .addOption("c", "compressed", false, "Archive using");
 
     public static void main(final String... args) {
         try {
@@ -126,8 +129,9 @@ public class CliHandler {
 
     /**
      * Control function to select correct scenario.
-     *
-     * Possible scenarios:     * 1. Reading from file & writing to file
+     * <p>
+     * Possible scenarios:
+     * 1. Reading from file & writing to file
      * 2. Reading from file & writing to stdout
      * 3. Reading from stdin & writing to file
      * 4. Reading from stdin & writing to stdout.
@@ -149,19 +153,20 @@ public class CliHandler {
         final String format = line.getOptionValue("format");
         log.info("format value = " + format);
         final Validation<Seq<Exception>, Assembler> validation;
+        final boolean compr = line.hasOption("c");
         if (line.hasOption("input") && line.hasOption("output")) {
             validation = validateFromFileToFile(
-                    line.getOptionValue("input"), line.getOptionValue("output"), k, format);
+                    line.getOptionValue("input"), line.getOptionValue("output"), k, format, compr);
             log.info("strategy : from file to file, input = " + line.getOptionValue("input")
                     + ", output = " + line.getOptionValue("output"));
         } else if (line.hasOption("input")) {
-            validation = validateFromFileToStd(line.getOptionValue("input"), k, format);
+            validation = validateFromFileToStd(line.getOptionValue("input"), k, format, compr);
             log.info("strategy : from file to stdout, input = " + line.getOptionValue("input"));
         } else if (line.hasOption("output")) {
-            validation = validateFromStdToFile(line.getOptionValue("output"), k, format);
+            validation = validateFromStdToFile(line.getOptionValue("output"), k, format, compr);
             log.info("strategy : from stdin to file, output = " + line.getOptionValue("output"));
         } else {
-            validation = validateFromStdToStd(k, format);
+            validation = validateFromStdToStd(k, format, compr);
             log.info("strategy : from stdin to stdout");
         }
         if (line.hasOption("verbose")) {
@@ -184,14 +189,23 @@ public class CliHandler {
             final String input,
             final String output,
             final String kValue,
-            final String formatValue) {
+            final String formatValue,
+            final boolean compr) {
         return combine(
                 validateInputPath(input),
                 validateOutputPath(output),
                 validateK(kValue),
                 validateFormat(formatValue)
         ).ap((source, target, k, format) -> {
-            final Stream<String> reads = new FileReader<>(source, format.parser).read().map(HasSequence::sequence);
+            final Stream<String> reads;
+
+            if (compr) {
+                reads = new DecoratorGZIP<>(new FileReader<>(source, format.parser), source, format.parser)
+                        .read().map(HasSequence::sequence);
+            } else {
+                reads = new FileReader<>(source, format.parser).read().map(HasSequence::sequence);
+            }
+
             final Writer<Record> writer = new FileWriter<>(target, Fasta.parser());
             log.info("Start validation from file to file");
             return new Assembler(reads, writer::write, k);
@@ -201,22 +215,29 @@ public class CliHandler {
     /**
      * Validation function for file to stdout scenario.
      *
-     * @param input         Path to input file in string form.
-     * @param kValue        Kmer's length in string form.
-     * @param formatValue   Format of input data.
+     * @param input       Path to input file in string form.
+     * @param kValue      Kmer's length in string form.
+     * @param formatValue Format of input data.
      * @return object of {@link Assembler}.
      */
 
     public static Validation<Seq<Exception>, Assembler> validateFromFileToStd(
             final String input,
             final String kValue,
-            final String formatValue) {
+            final String formatValue,
+            final boolean compr) {
         return combine(
                 validateInputPath(input),
                 validateK(kValue),
                 validateFormat(formatValue)
         ).ap((source, k, format) -> {
-            final Stream<String> reads = new FileReader<>(source, format.parser).read().map(HasSequence::sequence);
+            final Stream<String> reads;
+            if (compr) {
+                reads = new DecoratorGZIP<>(new FileReader<>(source, format.parser), source, format.parser)
+                        .read().map(HasSequence::sequence);
+            } else {
+                reads = new FileReader<>(source, format.parser).read().map(HasSequence::sequence);
+            }
             final Writer<Record> writer = new StdOutWriter<>(Fasta.parser());
             log.info("Start validation from file to stdout");
             return new Assembler(reads, writer::write, k);
@@ -226,22 +247,29 @@ public class CliHandler {
     /**
      * Validation function for stdin to file scenario.
      *
-     * @param output        Path to output file in string form.
-     * @param kValue        Kmer's length in string form.
-     * @param formatValue   Format of input data.
+     * @param output      Path to output file in string form.
+     * @param kValue      Kmer's length in string form.
+     * @param formatValue Format of input data.
      * @return object of {@link Assembler}.
      */
     public static Validation<Seq<Exception>, Assembler> validateFromStdToFile(
             final String output,
             final String kValue,
-            final String formatValue) {
+            final String formatValue,
+            final boolean compr) {
         return combine(
                 validateOutputPath(output),
                 validateK(kValue),
                 validateFormat(formatValue)
         ).ap((target, k, format) -> {
-            final Stream<String> reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
+            final Stream<String> reads;
             final Writer<Record> writer = new FileWriter<>(target, Fasta.parser());
+            if (compr) {
+                reads = new DecoratorGZIPStd<>(new StdInReader<>(format.parser),
+                        null, format.parser).read().map(HasSequence::sequence);
+            }  else {
+                reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
+            }
             log.info("Start validation from stdin to file");
             return new Assembler(reads, writer::write, k);
         });
@@ -250,15 +278,22 @@ public class CliHandler {
     /**
      * Validation function for stdin to stdout scenario.
      *
-     * @param kValue        Kmer's length in string form.
-     * @param formatValue   Format of input data.
+     * @param kValue      Kmer's length in string form.
+     * @param formatValue Format of input data.
      * @return object of {@link Assembler}.
      */
     public static Validation<Seq<Exception>, Assembler> validateFromStdToStd(
             final String kValue,
-            final String formatValue) {
+            final String formatValue,
+            final boolean compr) {
         return combine(validateK(kValue), validateFormat(formatValue)).ap((k, format) -> {
-            final Stream<String> reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
+            final Stream<String> reads;
+            if (compr) {
+               reads = new DecoratorGZIPStd<>(new StdInReader<>(format.parser),
+                       null, format.parser).read().map(HasSequence::sequence);
+            }  else {
+                reads = new StdInReader<>(format.parser).read().map(HasSequence::sequence);
+            }
             final Writer<Record> writer = new StdOutWriter<>(Fasta.parser());
             log.info("Start validation from stdin to stdout");
             return new Assembler(reads, writer::write, k);
@@ -267,7 +302,7 @@ public class CliHandler {
 
     /**
      * Function for validating input path.
-     *
+     * <p>
      * Checks if input file is: not existent, non readable, not a directory.
      *
      * @param path Path to input file in string form.
@@ -285,7 +320,7 @@ public class CliHandler {
 
     /**
      * Function for validating output path.
-     *
+     * <p>
      * Checks if output file is: existent, non writable, not a directory.
      *
      * @param path Path to output file in string form.
